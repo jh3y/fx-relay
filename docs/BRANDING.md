@@ -1,6 +1,6 @@
 # FX Relay — visual identity
 
-**FX Relay** is the chosen product name: the microphone provides a physical signal, and the utility relays it as a configurable action. It was previously called FX-MIC Bridge. A repository, domain or social handle has not yet been registered.
+**FX Relay** is the chosen product name: the microphone provides a physical signal, and the utility relays it as a configurable action. It was previously called FX-MIC Bridge. The source repository is [jh3y/fx-relay](https://github.com/jh3y/fx-relay).
 
 The direction is a small instrument panel: warm neutral surfaces, charcoal, a restrained orange accent, monospaced labels, numbered banks and clear physical controls. Light/dark appearance follows macOS. Avoid copying Teenage Engineering's logo or implying official affiliation.
 
