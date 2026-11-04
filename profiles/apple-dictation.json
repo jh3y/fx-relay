@@ -1,0 +1,285 @@
+{
+  "profile" : {
+    "configuration" : {
+      "activationDB" : -60,
+      "activationDelay" : 0.12,
+      "bankNames" : [
+        "Base \/ FX 1",
+        "FX 2",
+        "FX 3",
+        "FX 4"
+      ],
+      "cooldown" : 0.4,
+      "enabledBanks" : [
+        true,
+        true,
+        true,
+        true
+      ],
+      "handleAction" : {
+        "chord" : {
+          "keyCode" : 49,
+          "label" : "Space",
+          "modifiers" : 0
+        },
+        "delivery" : "targetApp",
+        "enterDelay" : 0.3,
+        "kind" : "none",
+        "pressEnter" : false,
+        "text" : ""
+      },
+      "minimumToneDuration" : 0.1,
+      "pttEnabled" : false,
+      "releaseDB" : -65,
+      "releaseDelay" : 0.9,
+      "toleranceHz" : 20,
+      "toneFloorDB" : -50,
+      "tones" : [
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 2,
+              "label" : "⌃⌥D",
+              "modifiers" : 3
+            },
+            "delivery" : "systemShortcut",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 1500
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 53,
+              "label" : "Escape",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 2300
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 36,
+              "label" : "Return",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 3100
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 6,
+              "label" : "⌘Z",
+              "modifiers" : 8
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 3900
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 2,
+              "label" : "⌃⌥D",
+              "modifiers" : 3
+            },
+            "delivery" : "systemShortcut",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 2751
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 53,
+              "label" : "Escape",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 4218
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 36,
+              "label" : "Return",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 5685
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 6,
+              "label" : "⌘Z",
+              "modifiers" : 8
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 7153
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 2,
+              "label" : "⌃⌥D",
+              "modifiers" : 3
+            },
+            "delivery" : "systemShortcut",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 818
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 53,
+              "label" : "Escape",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 1254
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 36,
+              "label" : "Return",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 1690
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 6,
+              "label" : "⌘Z",
+              "modifiers" : 8
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 2126
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 2,
+              "label" : "⌃⌥D",
+              "modifiers" : 3
+            },
+            "delivery" : "systemShortcut",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 2915
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 53,
+              "label" : "Escape",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 4469
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 36,
+              "label" : "Return",
+              "modifiers" : 0
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "keystroke",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 6023
+        },
+        {
+          "action" : {
+            "chord" : {
+              "keyCode" : 6,
+              "label" : "⌘Z",
+              "modifiers" : 8
+            },
+            "delivery" : "targetApp",
+            "enterDelay" : 0.3,
+            "kind" : "shortcut",
+            "pressEnter" : false,
+            "text" : ""
+          },
+          "frequency" : 7578
+        }
+      ]
+    },
+    "id" : "46584D49-4342-4000-8000-000000000003",
+    "name" : "Apple Dictation",
+    "template" : "Apple Dictation"
+  },
+  "schemaVersion" : 2
+}

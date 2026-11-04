@@ -1,0 +1,91 @@
+<p align="center"><img src="docs/brand/hero.svg" alt="FX Relay — Physical controls. Programmable actions." width="100%"></p>
+
+A small native macOS utility that turns the **Teenage Engineering EP-2350 FX-MIC** into a configurable controller for your apps.
+
+Squeeze the handle to gate your microphone. Play a sample to send a key, shortcut or command. Choose a profile for your workflow. **Your agent or dictation app handles speech; the bridge only turns signals into actions.**
+
+**macOS 15+ · Swift / SwiftUI · Four banks · Sixteen mappings · Local profiles**
+
+**Made possible by [tink-agent](https://github.com/tajchert/tink-agent), by Michal Tajchert.** Its exploration of the FX-MIC as an agent controller and its sample/pitch configuration were the starting point for this project. FX Relay builds on that inspiration with a focused native controller, diagnostic tooling and configurable workflows. [Acknowledgements and reference license →](THIRD_PARTY_NOTICES.md)
+
+[Get started](docs/GETTING_STARTED.md) · [Profiles](docs/PROFILES.md) · [Dictation options](docs/VOICE_OPTIONS.md) · [Managed Macs / CLI](docs/MANAGED_MACS.md) · [Build](docs/DEVELOPMENT.md) · [Progress](docs/HISTORY.md)
+
+<img src="docs/previews/v0.5.0/mappings-base.png" alt="Mapping editor with four banks, four sample slots and an editable action" width="100%">
+
+*Actual SwiftUI view rendered offscreen with the Codex starter profile. This image demonstrates the layout, not a live hardware test.*
+
+## A mic with something extra
+
+- **One setup, four banks.** Install the standard cue pack from the app. Pick an FX bank and sample slot on the mic; PLAY fires the configured action.
+- **Your controls, your mappings.** Hold Key, Keystroke, Shortcut, Type Text, optional delayed Enter, or None. Record shortcuts directly in the editor.
+- **Starter workflows.** Codex, Claude Code · Tap and Apple Dictation are included. Duplicate, rename, edit and share profiles as JSON.
+- **See what the mic is doing.** Live RMS/peak, amplitude history, spectrum, cue counters and event logs. Diagnostic exports contain measurements, not audio recordings.
+- **A small macOS utility.** Custom menu-bar status mark, light/dark UI, explicit input selection and background analysis. No account or package dependencies.
+
+## Get started
+
+1. Build and open the app using the commands below. Grant Microphone and Accessibility permissions when requested.
+2. Connect the mic's analogue output to a compatible input adapter and select that adapter in the menu bar. Configure your target app's microphone separately.
+3. For initial setup, connect USB-C and expose **FX MIC DISK**. Open **Edit Mappings → Mic & Workflows → Choose FX MIC DISK**. Review the inspection, then **Install Four Banks**. Existing known packs can be upgraded; custom files are left for review. The app keeps a local backup.
+4. Eject the disk in Finder so the mic reloads the pack. Resume monitoring and play each sample with keyboard output off.
+5. Choose a starter profile. Configure its target app, then enable output and focus a blank test document during the three-second countdown.
+
+[Full setup and hardware check →](docs/GETTING_STARTED.md)
+
+## Start with a profile
+
+| Profile | Base bank samples 1–4 | Setup |
+| --- | --- | --- |
+| **Codex** | Return · F8 voice toggle · Escape · Control+C | Requires a Codex CLI build/session supporting voice |
+| **Claude Code · Tap** | Return · Space record/send · Escape · Control+C | Enable `/voice tap`; the second Space can submit the prompt |
+| **Apple Dictation** | ⌃⌥D dictation toggle · Escape · Return · Undo | Set the same shortcut in macOS Keyboard settings |
+
+All three leave the handle's keyboard mapping off: the handle still gates the analogue mic. Every mapping is editable, and generic Hold-Space, Command Voice, Blank and Dictation Shortcut templates are also available. Text commands in starter profiles leave automatic Enter off.
+
+The second bank supplies commands such as `/voice` and `/compact`; the third provides navigation keys. The fourth is available for your own mappings. Apple Dictation repeats its four shortcuts across all banks. [View all defaults and compatibility notes →](docs/PROFILES.md)
+
+## How it works
+
+```text
+FX-MIC → audio adapter → local signal analysis → control event → configured action
+            └────────→ your agent / dictation app receives its own mic input
+```
+
+The orange button selects an FX preset. The sample selector chooses one of four slots. PLAY emits its cue. Pitch-shifted presets give the same samples different identities across four banks. No-FX and FX 1 share a bank. The UI shows **last played**, because silent selector changes cannot be observed.
+
+The bridge does not transcribe, route, mute, replace or upload your audio. Cue sounds remain in the signal heard by your other apps.
+
+## Current status
+
+This is a working development build, with these boundaries:
+
+- Base and FX 2 cue frequencies have been measured on hardware. The four-bank pack is installed on the development mic; **FX 3/4 analogue playback still needs its physical check**. Generated-cue tests cover all sixteen targets.
+- Handle keyboard output follows sound activity. A quiet pause can release a key while the handle remains squeezed; it is not a direct hardware-switch sensor.
+- Claude's terminal hold mode relies on key-repeat events. The bridge deliberately sends one keyDown/keyUp for Hold Key; the included Claude profile therefore uses tap mode. Target-app voice and system-hotkey behavior must be tested in the chosen app.
+- Output starts off and disarms on focus, profile, permission or capture changes. Independent held-key leases provide a release timeout. Force-kill/OS failure cannot run normal cleanup.
+- App bundles are locally ad-hoc signed. Developer ID signing and notarization remain a distribution step; no public binary release is claimed here.
+
+## Build it
+
+Requires macOS 15+, an installed Swift toolchain, and full Xcode for tests.
+
+```sh
+./script/build_and_run.sh
+```
+
+The app lives in `dist/FX Relay.app`. It runs in the menu bar and intentionally has no Dock icon. Build with `--build-only` to skip opening it. Builds use release optimization and two compiler jobs by default.
+
+```sh
+swift test --jobs 2 --configuration release
+python3 -m unittest discover -s Tests/DeviceSetupTests -v
+```
+
+[Development, architecture and validation →](docs/DEVELOPMENT.md)
+
+## Made to be yours
+
+Profiles are local JSON configuration, independent of your agent or dictation service. Importing one never arms output or changes the microphone. No automatic app switching, shell-command execution, speech model or cloud connection is built into the bridge.
+
+[Contributing](CONTRIBUTING.md) · [Brand assets](docs/BRANDING.md) · [Acknowledgements](THIRD_PARTY_NOTICES.md)
+
+Released under the [MIT license](LICENSE). The project was previously called FX-MIC Bridge. This is an independent project, not affiliated with Teenage Engineering, Apple, OpenAI or Anthropic.

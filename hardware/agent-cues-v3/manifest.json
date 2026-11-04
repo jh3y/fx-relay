@@ -1,0 +1,59 @@
+{
+  "packVersion": 3,
+  "baseConfigSHA256": "5f3c4c201ce959583fa3b6de264b639a8767efd8e1e35d4ec254cf4d55e071f6",
+  "status": "Prepared; not installed or physically validated",
+  "bankPitchSemitones": [
+    0,
+    10.5,
+    -10.5,
+    11.5
+  ],
+  "predictedFrequenciesHz": [
+    [
+      1500.0,
+      2300.0,
+      3100.0,
+      3900.0
+    ],
+    [
+      2751.01,
+      4218.22,
+      5685.43,
+      7152.63
+    ],
+    [
+      817.88,
+      1254.08,
+      1690.29,
+      2126.49
+    ],
+    [
+      2914.6,
+      4469.05,
+      6023.5,
+      7577.95
+    ]
+  ],
+  "deviceFiles": {
+    "1.wav": {
+      "bytes": 28844,
+      "sha256": "321b47edea008d026cb7cbbfbb63f4c981e17955b010da82caa22683c003831c"
+    },
+    "2.wav": {
+      "bytes": 28844,
+      "sha256": "7a181286a1ba37f12365c8048d8705d1c1c7d43e57ff1f16471ce839a759b463"
+    },
+    "3.wav": {
+      "bytes": 28844,
+      "sha256": "ee7bac52013352d42530e1e2e999b70e1f5ec8942514b3b73f106ef8c9201a5d"
+    },
+    "4.wav": {
+      "bytes": 28844,
+      "sha256": "62115e4d1e3460773c09f6d664241a2bfb63e563dfa45741f00efd55f570d14a"
+    },
+    "config.json": {
+      "bytes": 1276,
+      "sha256": "53ddbc2fb71fa58cdebd2f94ec06ecf167c4427b8e4f7f7297c7551994e2a66b"
+    }
+  }
+}

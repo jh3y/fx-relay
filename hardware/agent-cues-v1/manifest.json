@@ -1,0 +1,39 @@
+{
+  "packVersion": 1,
+  "name": "FX-MIC BRIDGE CUES V1",
+  "sampleRate": 48000,
+  "channels": 1,
+  "bitsPerSample": 16,
+  "durationSeconds": 0.3,
+  "peakAmplitude": 0.35,
+  "frequenciesHz": [
+    1500,
+    2300,
+    3100,
+    3900
+  ],
+  "audioOrigin": "Sine waves generated locally; no microphone recording",
+  "designReference": "https://github.com/tajchert/tink-agent/tree/main/ting-config",
+  "deviceFiles": {
+    "1.wav": {
+      "bytes": 28844,
+      "sha256": "321b47edea008d026cb7cbbfbb63f4c981e17955b010da82caa22683c003831c"
+    },
+    "2.wav": {
+      "bytes": 28844,
+      "sha256": "7a181286a1ba37f12365c8048d8705d1c1c7d43e57ff1f16471ce839a759b463"
+    },
+    "3.wav": {
+      "bytes": 28844,
+      "sha256": "ee7bac52013352d42530e1e2e999b70e1f5ec8942514b3b73f106ef8c9201a5d"
+    },
+    "4.wav": {
+      "bytes": 28844,
+      "sha256": "62115e4d1e3460773c09f6d664241a2bfb63e563dfa45741f00efd55f570d14a"
+    },
+    "config.json": {
+      "bytes": 615,
+      "sha256": "0af25152ea435205819c5f4113717f2e1c86b6b0988b2ad52144623f1ca880a3"
+    }
+  }
+}

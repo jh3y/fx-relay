@@ -1,0 +1,59 @@
+{
+  "packVersion": 2,
+  "name": "FX-MIC BRIDGE CUES V2",
+  "purpose": "Hardware bank investigation; not yet physically validated",
+  "sampleRate": 48000,
+  "channels": 1,
+  "bitsPerSample": 16,
+  "durationSeconds": 0.3,
+  "peakAmplitude": 0.35,
+  "audioOrigin": "Byte-identical locally generated sine waves from Agent Cues v1",
+  "baseConfigSHA256": "0af25152ea435205819c5f4113717f2e1c86b6b0988b2ad52144623f1ca880a3",
+  "presets": [
+    {
+      "position": 0,
+      "samplePitchSemitones": 0,
+      "expectedFrequenciesHz": [
+        1500.0,
+        2300.0,
+        3100.0,
+        3900.0
+      ]
+    },
+    {
+      "position": 1,
+      "samplePitchSemitones": 10.5,
+      "expectedFrequenciesHz": [
+        2751.0121296140137,
+        4218.218598741488,
+        5685.425067868961,
+        7152.631536996436
+      ]
+    }
+  ],
+  "ledMapping": "Unverified. Do not infer LED position or cycle length from preset index.",
+  "designReference": "https://github.com/tajchert/tink-agent/blob/main/ting-config/config.json",
+  "schemaReference": "https://teenage.engineering/guides/ep-2350",
+  "deviceFiles": {
+    "1.wav": {
+      "bytes": 28844,
+      "sha256": "321b47edea008d026cb7cbbfbb63f4c981e17955b010da82caa22683c003831c"
+    },
+    "2.wav": {
+      "bytes": 28844,
+      "sha256": "7a181286a1ba37f12365c8048d8705d1c1c7d43e57ff1f16471ce839a759b463"
+    },
+    "3.wav": {
+      "bytes": 28844,
+      "sha256": "ee7bac52013352d42530e1e2e999b70e1f5ec8942514b3b73f106ef8c9201a5d"
+    },
+    "4.wav": {
+      "bytes": 28844,
+      "sha256": "62115e4d1e3460773c09f6d664241a2bfb63e563dfa45741f00efd55f570d14a"
+    },
+    "config.json": {
+      "bytes": 835,
+      "sha256": "5f3c4c201ce959583fa3b6de264b639a8767efd8e1e35d4ec254cf4d55e071f6"
+    }
+  }
+}
