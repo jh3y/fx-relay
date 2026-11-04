@@ -12,7 +12,7 @@ TREES = ['Sources', 'Tests', 'Resources', 'hardware', 'profiles', '.github', 'li
 DOCS = ['GETTING_STARTED.md', 'PROFILES.md', 'VOICE_OPTIONS.md', 'DEVELOPMENT.md', 'HISTORY.md', 'BRANDING.md', 'MANAGED_MACS.md']
 SCRIPTS = ['build_and_run.sh', 'configure_mic.py', 'switch_bank_probe.py', 'install_four_banks.py',
            'generate_icon.swift', 'generate_brand.py', 'render_vectors.swift', 'render_ui.sh', 'render_ui.swift',
-           'export_profiles.sh', 'export_profiles.swift', 'export_repository.py']
+           'export_profiles.sh', 'export_profiles.swift', 'export_repository.py', 'summarize_diagnostic.py']
 
 def export(destination):
     destination = destination.resolve()

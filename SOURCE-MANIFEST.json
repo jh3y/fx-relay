@@ -137,13 +137,14 @@
     "script/configure_mic.py": "dc9324a7f42dc31bdafb346845c45f72c5e12aab88f5c9ded3dba01362e607d2",
     "script/export_profiles.sh": "1f522fcca7291666aa76964b75ad7f44d7c3b7c757b8556204438826ca701faf",
     "script/export_profiles.swift": "5bafbba4c65782845ea4aa94706b2ba62a599b7d4efe268cc0a23199f3555fd5",
-    "script/export_repository.py": "e72e26db4350c13b051fd8b0480ca9fff7f5ae621b008630f1b1866fce6250c0",
+    "script/export_repository.py": "8dc75ce0a64bd4aa96c332165e6a6466a96a0aef9cff8124119fae9e840d3984",
     "script/generate_brand.py": "05e933b73c028c17963fbdbd5337a8bdeb7d6c0aab5ded320ef5440074aae007",
     "script/generate_icon.swift": "4a713c19a42629911985a5854511f44a33a0e40c8b778d3fd8f7f542013b6cde",
     "script/install_four_banks.py": "20aa6ea6147071de4abde73dadd1e5127ffb86c31926d549857ed6202f890c95",
     "script/render_ui.sh": "9c6823656975735cabc7c9082c9b51790fe5c4ee61e9fa751776184bb7d122a0",
     "script/render_ui.swift": "f4daf9022e5d8d6bd0dd1eb5017e12b63ab4ea3488dd8c8956d64b9cad18204b",
     "script/render_vectors.swift": "531de7e73fa2feac5c8bc6aa770d61c26735d29cc83755b7bf5c44785f7c82fd",
+    "script/summarize_diagnostic.py": "63029216df1b20739a4f204e44f0a756c2409fe3620e81eff1783a2dd40fdf41",
     "script/switch_bank_probe.py": "52e0c3a90ed652c5b70a80d578fbd9f43485a5b919783a01b075bfeb1f7f3ab2"
   }
 }
