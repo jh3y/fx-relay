@@ -11,6 +11,7 @@ struct ActionEditor: View {
             Picker("Action", selection: $action.kind) {
                 Text("None").tag(BridgeAction.Kind.none)
                 Text("Hold Key").tag(BridgeAction.Kind.holdKey)
+                Text("Hold Key — Continuous").tag(BridgeAction.Kind.holdKeyContinuous)
                 Text("Keystroke").tag(BridgeAction.Kind.keystroke)
                 Text("Shortcut").tag(BridgeAction.Kind.shortcut)
                 Text("Type Text").tag(BridgeAction.Kind.typeText)
@@ -53,6 +54,9 @@ struct ActionEditor: View {
                 Text("Recognize the input without sending any keys.").foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             } else if action.kind == .holdKey {
                 Text("One key down, then one key up when the signal ends. No repeated key presses.").font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            } else if action.kind == .holdKeyContinuous {
+                Text("One key down, continuous key-repeat events while active, then one key up. Use Space with Claude Code’s /voice hold. Repeats continue through the configured release delay; ordinary text fields will receive repeated characters.")
+                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
         .onChange(of: action.kind) { _, value in

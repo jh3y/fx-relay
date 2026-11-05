@@ -24,7 +24,7 @@ final class BankHandleTests: XCTestCase {
         XCTAssertEqual(mixed.action(for: 3).kind, .none)
         XCTAssertNil(router.process(frame(true, transition: true), configuration: mixed).activation)
         _ = router.process(frame(), configuration: mixed)
-        XCTAssertEqual(router.process(frame(true, transition: true), configuration: mixed).activation, .init(.holdKey, .space))
+        XCTAssertEqual(router.process(frame(true, transition: true), configuration: mixed).activation, .init(.holdKeyContinuous, .space))
         XCTAssertNil(router.process(frame(true), configuration: mixed).activation)
         XCTAssertTrue(router.process(frame(false, transition: false), configuration: mixed).release)
     }
@@ -76,12 +76,12 @@ final class BankHandleTests: XCTestCase {
         router.select(1)
         XCTAssertTrue(router.process(frame(true), configuration: changed).release)
     }
-    func testSchemaThreeRoundTripAndLegacyGlobalMigration() throws {
+    func testSchemaFourRoundTripAndLegacyGlobalMigration() throws {
         let profile = ProfileTemplate.bankWorkflows.makeProfile()
         let data = try ProfileCodec.encode(profile)
         XCTAssertEqual(try ProfileCodec.decode(data), profile)
         var json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertEqual(json["schemaVersion"] as? Int, 3)
+        XCTAssertEqual(json["schemaVersion"] as? Int, 4)
         json["schemaVersion"] = 2
         var c = json["profile"] as! [String: Any]
         var config = c["configuration"] as! [String: Any]

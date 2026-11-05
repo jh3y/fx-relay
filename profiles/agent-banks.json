@@ -12,7 +12,7 @@
           },
           "delivery" : "targetApp",
           "enterDelay" : 0.3,
-          "kind" : "holdKey",
+          "kind" : "holdKeyContinuous",
           "pressEnter" : false,
           "text" : ""
         },
@@ -331,5 +331,5 @@
     "name" : "Agent Banks",
     "template" : "Agent Banks"
   },
-  "schemaVersion" : 3
+  "schemaVersion" : 4
 }

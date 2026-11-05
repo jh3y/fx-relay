@@ -7,7 +7,13 @@ public protocol KeyEventSink: AnyObject {
     func keyUp()
 }
 
-/// One down, at most one matching up. Timer runs independently of the UI/capture queues.
+/// Repeats are keyDown events marked as autorepeat, not new down/up pairs.
+public protocol RepeatingKeyEventSink: KeyEventSink {
+    func keyRepeat()
+}
+
+/// One initial down, optional explicit repeats, and one matching up. The expiry
+/// timer runs independently of the UI/capture queues; it never generates repeats.
 public final class HeldKeyLease {
     private let lock = NSLock()
     private let queue = DispatchQueue(label: "com.jhey.fxmicbridge.key-release", qos: .userInteractive)
@@ -15,16 +21,24 @@ public final class HeldKeyLease {
     private var timer: DispatchSourceTimer?
     private var released: (() -> Void)?
     private var deadline = DispatchTime.now()
+    private var repeatSink: RepeatingKeyEventSink?
+    private var nextRepeatAt = DispatchTime.now()
+    private var repeatCount = 0
+
+    public var repeatsPosted: Int { lock.lock(); defer { lock.unlock() }; return repeatCount }
 
     public init() {}
     deinit { release() }
 
     @discardableResult
-    public func hold(_ newSink: KeyEventSink, duration: TimeInterval, onRelease: @escaping () -> Void) -> Bool {
+    public func hold(_ newSink: KeyEventSink, duration: TimeInterval, continuous: Bool = false, onRelease: @escaping () -> Void) -> Bool {
         lock.lock()
         defer { lock.unlock() }
-        guard sink == nil, newSink.prepare() else { return false }
+        guard sink == nil, !continuous || newSink is RepeatingKeyEventSink, newSink.prepare() else { return false }
         sink = newSink
+        repeatSink = continuous ? newSink as? RepeatingKeyEventSink : nil
+        repeatCount = 0
+        nextRepeatAt = .now() + 0.03
         released = onRelease
         let timer = DispatchSource.makeTimerSource(queue: queue)
         deadline = .now() + min(max(duration, 0.01), 2)
@@ -43,6 +57,18 @@ public final class HeldKeyLease {
         deadline = .now() + min(max(duration, 0.01), 2)
         timer?.schedule(deadline: deadline)
         return true
+    }
+
+    /// Call only after checking focus, permission and a fresh analysis frame.
+    /// Normal 40 ms control frames supply ~25 repeats/s. No catch-up bursts or
+    /// repeat timer: stalled capture/UI stops repeats and the lease releases.
+    public func repeatIfDue() {
+        lock.lock(); defer { lock.unlock() }
+        let now = DispatchTime.now()
+        guard let repeatSink, sink != nil, now < deadline, now >= nextRepeatAt else { return }
+        repeatSink.keyRepeat()
+        repeatCount += 1
+        nextRepeatAt = now + 0.03
     }
 
     private func expire() {
@@ -64,6 +90,7 @@ public final class HeldKeyLease {
         guard let sink else { return nil }
         sink.keyUp()
         self.sink = nil
+        repeatSink = nil
         timer?.cancel()
         timer = nil
         let callback = released

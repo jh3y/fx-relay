@@ -14,6 +14,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.4.0 | Dedicated mapping window, four-bank pack, Dictation template and first icon |
 | 0.5.0 | Renamed FX Relay; starter profiles, native four-bank setup, custom menu-bar identity, UI polish and repository preparation |
 | 0.6.0 | Per-bank handle actions, Agent Banks starter, independent sound detection and clearer routing/keyboard diagnostics |
+| 0.6.1 | Optional continuous key holds for terminal voice modes, with marked autorepeat and safe cancellation |
 
 ## The interface, then and now
 

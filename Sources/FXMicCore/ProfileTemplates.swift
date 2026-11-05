@@ -20,7 +20,7 @@ public enum ProfileTemplate: String, CaseIterable, Identifiable {
         case .dictationShortcut: return "Match this shortcut to MacWhisper, Superwhisper or another dictation app."
         case .agentVoice: return "Sound-based hold Space for apps accepting key down/up. Terminal repeat-based PTT may not work."
         case .commandVoice: return "Type /voice or /compact, then submit separately with Return."
-        case .bankWorkflows: return "Different handle actions per FX bank. Play a sample after switching. Claude hold-key compatibility needs a target-app check."
+        case .bankWorkflows: return "Different handle actions per FX bank. For Claude’s /voice hold, choose Hold Key — Continuous. Play a sample after switching FX."
         case .blank: return "Start with sixteen empty sample mappings and no handle key."
         }
     }
@@ -62,7 +62,7 @@ public enum ProfileTemplate: String, CaseIterable, Identifiable {
         }
         if self == .bankWorkflows {
             c.bankNames = ["Claude · FX 1", "Codex · FX 2", "Dictation · FX 3", "FX 4"]
-            c.handleActions = [.init(.holdKey, .space), .init(.none), .init(.none), .init(.none)]
+            c.handleActions = [.init(.holdKeyContinuous, .space), .init(.none), .init(.none), .init(.none)]
             c.tones[0].action = enter; c.tones[1].action = escape; c.tones[2].action = interrupt
             c.tones[4].action = .init(.keystroke, .init(100, label: "F8 · Voice"))
             c.tones[5].action = enter; c.tones[6].action = escape

@@ -13,7 +13,7 @@ struct BankHandleEditor: View {
             Text("After changing FX on the mic, play a sample to identify the bank. A sample mapped to None can select a bank without firing a macro. You can also select the handle bank explicitly in Signal Monitor.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             if configuration.handleActions[bank].kind == .holdKey && configuration.handleActions[bank].chord.keyCode == 49 {
-                Label("Claude Code's terminal hold mode expects key-repeat events. This action sends one down/up pair; use the tap-mode workflow unless your target accepts that pair.", systemImage: "info.circle")
+                Label("Claude Code's terminal hold mode expects repeats. Choose Hold Key — Continuous for that workflow; ordinary Hold Key sends just one down/up pair.", systemImage: "info.circle")
                     .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }.padding(20).background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 12))

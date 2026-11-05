@@ -90,8 +90,13 @@ final class ActionDispatcher {
             disable(reason: "Permission missing or stale audio"); return
         }
         lastFrameAt = frame.time
+        // End a sample hold before renewing/repeating it on this frame.
+        for id in Array(held.keys) where id > 0 && frame.tone.heldControl != id - 1 {
+            release(id: id, reason: "Tone ended")
+        }
         for value in held.values {
             if !value.lease.renew(duration: 0.6) { disable(reason: "Key safety timeout"); return }
+            value.lease.repeatIfDue()
         }
         if waitingForQuiet {
             if !frame.pttActive && frame.tone.candidate == nil && frame.tone.heldControl == nil {
@@ -102,9 +107,6 @@ final class ActionDispatcher {
         }
         if let action = handle.activation { activate(action, id: 0) }
         if !frame.pttActive { release(id: 0, reason: "PTT ended") }
-        for id in Array(held.keys) where id > 0 && frame.tone.heldControl != id - 1 {
-            release(id: id, reason: "Tone ended")
-        }
         if let slot = frame.tone.detected { activate(configuration.action(for: slot), id: slot + 1) }
     }
 
@@ -133,9 +135,9 @@ final class ActionDispatcher {
         }
         let sink = QuartzChordSink(pid: target.processIdentifier, chord: action.chord,
                                    systemShortcut: action.kind == .shortcut && action.delivery == .systemShortcut)
-        if action.kind == .holdKey {
+        if action.isHold {
             let lease = HeldKeyLease(), token = UUID()
-            guard lease.hold(sink, duration: 0.6, onRelease: { [weak self] in
+            guard lease.hold(sink, duration: 0.6, continuous: action.kind == .holdKeyContinuous, onRelease: { [weak self] in
                 DispatchQueue.main.async {
                     guard let self, self.held[id]?.token == token else { return }
                     self.disable(reason: "Key safety timeout")
@@ -143,7 +145,7 @@ final class ActionDispatcher {
             }) else { disable(reason: "Could not prepare keyboard events"); return }
             held[id] = (lease, action.chord, token)
             if id == 0 { pttHeld = true }
-            onEvent?("\(id == 0 ? "PTT" : "Control \(id)") DOWN posted · \(action.chord.label)")
+            onEvent?("\(id == 0 ? "PTT" : "Control \(id)") DOWN posted · \(action.chord.label)\(action.kind == .holdKeyContinuous ? " · continuous repeat" : "")")
         } else {
             guard sink.prepare() else { disable(reason: "Could not prepare keyboard events"); return }
             sink.keyDown(); sink.keyUp()
@@ -155,7 +157,8 @@ final class ActionDispatcher {
         guard let value = held.removeValue(forKey: id) else { return }
         value.lease.release()
         if id == 0 { pttHeld = false }
-        onEvent?("\(id == 0 ? "PTT" : "Control \(id)") UP posted · \(value.chord.label) · \(reason)")
+        let repeats = value.lease.repeatsPosted
+        onEvent?("\(id == 0 ? "PTT" : "Control \(id)") UP posted · \(value.chord.label)\(repeats > 0 ? " · \(repeats) repeats" : "") · \(reason)")
     }
 
     func testSpace(destination: TestDestination) {
@@ -211,38 +214,6 @@ final class ActionDispatcher {
             onEvent?(wasHeld ? "TEST Space UP posted · \(reason)" : "Test cancelled · \(reason)")
         }
     }
-}
-
-/// Ordinary keys go to the captured process; explicitly configured system shortcuts
-/// enter the HID event stream. Both events exist before any down is posted.
-private final class QuartzChordSink: KeyEventSink {
-    private let pid: pid_t
-    private let chord: KeyChord
-    private let systemShortcut: Bool
-    private var down: CGEvent?
-    private var up: CGEvent?
-    init(pid: pid_t, chord: KeyChord, systemShortcut: Bool = false) {
-        self.pid = pid; self.chord = chord; self.systemShortcut = systemShortcut
-    }
-    func prepare() -> Bool {
-        guard chord.keyCode <= 127 else { return false }
-        let source = CGEventSource(stateID: .privateState)
-        down = CGEvent(keyboardEventSource: source, virtualKey: chord.keyCode, keyDown: true)
-        up = CGEvent(keyboardEventSource: source, virtualKey: chord.keyCode, keyDown: false)
-        var flags: CGEventFlags = []
-        if chord.modifiers & 1 != 0 { flags.insert(.maskControl) }
-        if chord.modifiers & 2 != 0 { flags.insert(.maskAlternate) }
-        if chord.modifiers & 4 != 0 { flags.insert(.maskShift) }
-        if chord.modifiers & 8 != 0 { flags.insert(.maskCommand) }
-        for event in [down, up].compactMap({ $0 }) {
-            event.flags = flags
-            event.setIntegerValueField(.keyboardEventAutorepeat, value: 0)
-            event.setIntegerValueField(.eventSourceUserData, value: 0x4658425247)
-        }
-        return down != nil && up != nil
-    }
-    func keyDown() { if systemShortcut { down?.post(tap: .cghidEventTap) } else { down?.postToPid(pid) } }
-    func keyUp() { if systemShortcut { up?.post(tap: .cghidEventTap) } else { up?.postToPid(pid) } }
 }
 
 private final class QuartzSpaceSink: KeyEventSink {

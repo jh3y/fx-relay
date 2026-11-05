@@ -10,7 +10,7 @@ Squeeze the handle to gate your microphone. Play a sample to send a key, shortcu
 
 [Get started](docs/GETTING_STARTED.md) · [Profiles](docs/PROFILES.md) · [Dictation options](docs/VOICE_OPTIONS.md) · [Managed Macs / CLI](docs/MANAGED_MACS.md) · [Build](docs/DEVELOPMENT.md) · [Progress](docs/HISTORY.md)
 
-<img src="docs/previews/v0.6.0/bank-handle.png" alt="Mapping editor with a separate handle action for each FX bank" width="100%">
+<img src="docs/previews/v0.6.1/bank-handle.png" alt="Mapping editor with a separate handle action for each FX bank" width="100%">
 
 *Actual SwiftUI view rendered offscreen with the Agent Banks starter profile. This image demonstrates the layout, not a live hardware test.*
 
@@ -18,7 +18,7 @@ Squeeze the handle to gate your microphone. Play a sample to send a key, shortcu
 
 - **One setup, four banks.** Install the standard cue pack from the app. Pick an FX bank and sample slot on the mic; PLAY fires the configured action.
 - **A handle action per bank.** Give FX 1 a key hold and FX 2 no keyboard action, or configure all four independently. A sample identifies the bank after switching FX.
-- **Your controls, your mappings.** Hold Key, Keystroke, Shortcut, Type Text, optional delayed Enter, or None. Record shortcuts directly in the editor.
+- **Your controls, your mappings.** Hold Key, Hold Key — Continuous, Keystroke, Shortcut, Type Text, optional delayed Enter, or None. Record shortcuts directly in the editor.
 - **Starter workflows.** Codex, Claude Code · Tap, Apple Dictation and Agent Banks are included. Duplicate, rename, edit and share profiles as JSON.
 - **See what the mic is doing.** Live RMS/peak, amplitude history, spectrum, cue counters and event logs. Diagnostic exports contain measurements, not audio recordings.
 - **A small macOS utility.** Custom menu-bar status mark, light/dark UI, explicit input selection and background analysis. No account or package dependencies.
@@ -45,7 +45,7 @@ Those three leave the handle's keyboard mapping off: the handle still gates the 
 
 The second bank supplies commands such as `/voice` and `/compact`; the third provides navigation keys. The fourth is available for your own mappings. Apple Dictation repeats its four shortcuts across all banks. [View all defaults and compatibility notes →](docs/PROFILES.md)
 
-**Agent Banks** puts Claude in FX 1, Codex in FX 2 and Dictation in FX 3 within one profile. It demonstrates Hold Space in FX 1 and no handle key elsewhere. Claude's terminal hold mode needs key repeats, so this example is configurable, not a claim of tested Claude PTT compatibility. Choose a bank → **Handle** to edit it. Sample 4 is unassigned in every bank so it can identify that bank without sending a macro. [Bank routing and handle checks →](docs/PROFILES.md#handle-actions-per-bank)
+**Agent Banks** puts Claude in FX 1, Codex in FX 2 and Dictation in FX 3 within one profile. New copies use continuous Hold Space in FX 1 and no handle key elsewhere. Enable `/voice hold` in Claude first. Existing saved profiles retain their mappings; choose **Hold Key — Continuous** explicitly when upgrading. Choose a bank → **Handle** to edit it. Sample 4 is unassigned in every bank so it can identify that bank without sending a macro. [Bank routing and handle checks →](docs/PROFILES.md#handle-actions-per-bank)
 
 ## How it works
 
@@ -65,7 +65,7 @@ This is a working development build, with these boundaries:
 - Base and FX 2 cue frequencies have been measured on hardware. The four-bank pack is installed on the development mic; **FX 3/4 analogue playback still needs its physical check**. Generated-cue tests cover all sixteen targets.
 - Voice transcription was reported to stop in FX 3/4 and resume in the base bank. The cause is unconfirmed; use the base bank for voice until the [voice-bank check](docs/VOICE_BANK_CHECK.md) separates hardware behavior from keyboard actions. Cue recognition alone does not establish voice compatibility.
 - Handle keyboard output follows sound activity. A quiet pause can release a key while the handle remains squeezed; it is not a direct hardware-switch sensor.
-- Claude's terminal hold mode relies on key-repeat events. The bridge deliberately sends one keyDown/keyUp for Hold Key; the included Claude profile therefore uses tap mode. Target-app voice and system-hotkey behavior must be tested in the chosen app.
+- **Hold Key** sends one down/up pair. **Hold Key — Continuous** adds marked repeat events for terminal hold modes such as Claude's `/voice hold`. Repeats stop on signal release, focus loss, capture failure or output disable. Native single-hold receipt is verified; continuous delivery and target-app voice behavior still need a live check. The Claude Code · Tap starter remains a separate workflow.
 - Output starts off and disarms on focus, profile, permission or capture changes. Independent held-key leases provide a release timeout. Force-kill/OS failure cannot run normal cleanup.
 - App bundles are locally ad-hoc signed. Developer ID signing and notarization remain a distribution step; no public binary release is claimed here.
 

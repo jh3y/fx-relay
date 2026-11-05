@@ -16,7 +16,7 @@ public struct KeyChord: Codable, Equatable, Sendable {
 
 public struct BridgeAction: Codable, Equatable, Sendable {
     public enum Delivery: String, Codable, CaseIterable, Sendable { case targetApp, systemShortcut }
-    public enum Kind: String, Codable, CaseIterable, Sendable { case none, holdKey, keystroke, shortcut, typeText }
+    public enum Kind: String, Codable, CaseIterable, Sendable { case none, holdKey, holdKeyContinuous, keystroke, shortcut, typeText }
     public var kind: Kind
     public var chord: KeyChord
     public var text = ""
@@ -24,9 +24,11 @@ public struct BridgeAction: Codable, Equatable, Sendable {
     public var enterDelay = 0.3
     public var delivery = Delivery.targetApp
     public init(_ kind: Kind, _ chord: KeyChord = .space) { self.kind = kind; self.chord = chord }
+    public var isHold: Bool { kind == .holdKey || kind == .holdKeyContinuous }
     public var label: String {
         if kind == .none { return "Unassigned" }
         if kind == .typeText { return "\(text.isEmpty ? "Type text" : String(text.prefix(28)))\(pressEnter ? " ↵" : "")" }
+        if kind == .holdKeyContinuous { return "\(chord.label) · Continuous Hold" }
         return "\(chord.label)\(kind == .holdKey ? " · Hold" : "")"
     }
     private enum CodingKeys: String, CodingKey { case kind, chord, text, pressEnter, enterDelay, delivery }

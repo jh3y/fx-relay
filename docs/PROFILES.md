@@ -20,12 +20,12 @@ Changing bank or mapping releases held keys and cancels pending typing/Enter. Th
 
 | Bank | Handle | Samples 1–4 |
 | --- | --- | --- |
-| No-FX / FX 1 · Claude | Hold Space | Return · Escape · Control+C · None |
+| No-FX / FX 1 · Claude | Hold Space — Continuous | Return · Escape · Control+C · None |
 | FX 2 · Codex | None | F8 · Return · Escape · None |
 | FX 3 · Dictation | None | ⌃⌥D system shortcut · Return · Escape · None |
 | FX 4 | None | All unassigned |
 
-Sample 4 can identify any bank without sending a macro. This starter is added once on upgrade without changing the selected profile or existing mappings. It does not switch applications. Configure Apple Dictation's shortcut and check Codex voice support as described below. Claude's terminal hold mode requires repeats; the single down/up example demonstrates per-bank configuration, not verified Claude compatibility. Use the separate Claude Code · Tap workflow when that is the desired interaction.
+Sample 4 can identify any bank without sending a macro. This starter is added once on upgrade without changing the selected profile or existing mappings. It does not switch applications. Configure Apple Dictation's shortcut and check Codex voice support as described below. New copies use continuous Space in FX 1. Older saved copies retain their single-hold setting: change the bank's Handle action to **Hold Key — Continuous**. Run `/voice hold` in Claude before arming. Live compatibility still requires checking in your terminal. Use the separate Claude Code · Tap workflow when a toggle is preferred.
 
 ## Codex
 
@@ -41,6 +41,14 @@ Enable `/voice tap` in Claude first. With an empty prompt, Space starts recordin
 
 Claude's terminal hold mode relies on repeated key events. The bridge's Hold Key action intentionally emits a single down/up pair, so the starter uses tap mode. [Claude voice documentation](https://code.claude.com/docs/en/voice-dictation) describes the account/microphone requirements, recording modes and submission behavior. Actual operation with synthesized events remains a live compatibility check.
 
+## Claude Code · continuous hold
+
+In your chosen profile, select the Claude bank → **Handle** → **Hold Key — Continuous** → **Space**, then Apply Changes. In Claude, run `/voice hold`. Arm keyboard output and focus the Claude terminal during the countdown, then wait quietly before speaking while squeezing. With differing bank mappings, first identify the bank by playing a sample or explicitly selecting Handle bank in Signal Monitor.
+
+Ordinary Hold Key emits one down and one up. Continuous hold emits one initial down, marked autorepeat key-down events while active, then one up. Fresh control frames supply approximately 25 repeats per second; a late frame never produces a catch-up burst. There is no repeat timer running in the background. Focus, Accessibility, audio freshness and the independent release timeout still apply. The event log identifies continuous holds and includes the total repeats when releasing.
+
+This follows Claude's documented key-repeat requirement. It is not speech recognition in FX Relay. Sound-based activation and Claude's own warmup can miss the beginning of speech; pauses longer than the release delay stop the hold. Repeats continue during that delay, initially 900 ms. An ordinary text field will receive repeated spaces/characters, just as when a key repeats on a keyboard. Native event flags and cancellation are tested; live terminal acceptance remains a separate check.
+
 ## Apple Dictation
 
 Each bank: ⌃⌥D, Escape, Return, Command+Z. Handle: no key.
@@ -53,6 +61,6 @@ Arm output, focus a blank text field, and play sample 1. Wait for Apple's indica
 
 **Dictation Shortcut** uses the same editable shortcut layout for MacWhisper, Superwhisper or another app. Configure one service to own that shortcut. **Hold-Space Voice** is available for applications accepting a down/up hold; its handle detection follows sound and can release during silence. **Command Voice** supplies editable slash-command examples. **Blank** starts empty.
 
-Actions: None, Hold Key, Keystroke, Shortcut and Type Text. Hold Key releases on the inferred handle release or sample ending. Text is one line with optional delayed Enter, disabled by default in starters. The bridge never executes shell commands. Ordinary actions target the armed app; explicit system shortcuts enter the macOS event stream.
+Actions: None, Hold Key, Hold Key — Continuous, Keystroke, Shortcut and Type Text. Hold Key releases on the inferred handle release or sample ending. Text is one line with optional delayed Enter, disabled by default in starters. The bridge never executes shell commands. Ordinary actions target the armed app; explicit system shortcuts enter the macOS event stream.
 
-Profile JSON schema 3 is exported; schemas 1 and 2 remain importable. Older profiles inherit their previous effective handle mapping in all four banks. The app saves the upgraded library under `bridge.profiles.v4`, leaving previous library bytes intact for older versions. Imports are validated and added as new copies, never silently overwriting an existing profile. They cannot arm output, select an input or write mic files. The example JSON files in [profiles/](../profiles/) are generated from the same Swift templates used in the app.
+Profile JSON schema 4 is exported; schemas 1–3 remain importable. Older profiles inherit their previous effective handle mapping in all four banks. The app saves the upgraded library under `bridge.profiles.v5`, leaving previous library bytes intact for older versions. Imports are validated and added as new copies, never silently overwriting an existing profile. They cannot arm output, select an input or write mic files. The example JSON files in [profiles/](../profiles/) are generated from the same Swift templates used in the app.
