@@ -71,7 +71,7 @@
     "Sources/FXMicCore/SignalPresence.swift": "7bd85d72f4ddd0fed4573efbf34b0fc4f47173609064c4775d0ef41a257936ef",
     "Sources/FXMicCore/TextActionRunner.swift": "993ac334932299067fc5087931c25d14503d64436f71be14b3c09ba831ce9f2b",
     "Sources/FXMicCore/ToneDetector.swift": "1ff01d3771b3e896d0bea14293d81df71a1668333f80eb441e1b53248d499a08",
-    "THIRD_PARTY_NOTICES.md": "d48ae953e7ea5af419d7b69fb6f1720f4b544bf386b2da1477a74f535ff15fcd",
+    "THIRD_PARTY_NOTICES.md": "30cfea0cdcca6112b7a36ea5f5104c88a4aeb5b9bec3acaa6ae2180df7e1ceb5",
     "Tests/DeviceSetupTests/test_configure_mic.py": "80d2ee8a66d1a54cb1fc11688c34e62e6b879f0f052e24ae07142ebb301c97df",
     "Tests/DeviceSetupTests/test_four_banks.py": "b0701c4417b72d3b62bc69cf22d3067fa2ea0cfa1b7be6251d110efd9f48124f",
     "Tests/DeviceSetupTests/test_switch_bank_probe.py": "26469c21fe6fef2643afa7d117ebe5d02ac91777b05223fba2e1b08ead3bc7b0",
