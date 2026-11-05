@@ -61,6 +61,12 @@ public struct BridgeConfiguration: Codable, Equatable, Sendable {
     public var releaseDelay = 0.9
     public var pttEnabled = true
     public var handleAction = BridgeAction(.holdKey)
+    /// Nil keeps the legacy global mapping. New edits use one action per FX bank.
+    public var bankHandleActions: [BridgeAction]?
+    public var handleActions: [BridgeAction] {
+        get { bankHandleActions ?? Array(repeating: pttEnabled ? handleAction : .init(.none), count: Self.bankCount) }
+        set { bankHandleActions = newValue }
+    }
     public var toneFloorDB = -50.0
     public var toleranceHz = 20.0
     public var minimumToneDuration = 0.10
@@ -80,7 +86,7 @@ public struct BridgeConfiguration: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case activationDB, activationDelay, releaseDB, releaseDelay, pttEnabled, handleAction
-        case toneFloorDB, toleranceHz, minimumToneDuration, cooldown, tones, bankNames, enabledBanks
+        case toneFloorDB, toleranceHz, minimumToneDuration, cooldown, tones, bankNames, enabledBanks, bankHandleActions
     }
 
     public init(from decoder: Decoder) throws {
@@ -92,6 +98,7 @@ public struct BridgeConfiguration: Codable, Equatable, Sendable {
         releaseDelay = try values.decode(Double.self, forKey: .releaseDelay)
         pttEnabled = try values.decode(Bool.self, forKey: .pttEnabled)
         handleAction = try values.decode(BridgeAction.self, forKey: .handleAction)
+        bankHandleActions = try values.decodeIfPresent([BridgeAction].self, forKey: .bankHandleActions)
         toneFloorDB = try values.decode(Double.self, forKey: .toneFloorDB)
         toleranceHz = try values.decode(Double.self, forKey: .toleranceHz)
         minimumToneDuration = try values.decode(Double.self, forKey: .minimumToneDuration)
@@ -122,6 +129,9 @@ public struct BridgeConfiguration: Codable, Equatable, Sendable {
         if c.tones.count != Self.controlCount { c.tones = Self().tones }
         if c.bankNames.count != Self.bankCount { c.bankNames = Self().bankNames }
         if c.enabledBanks.count != Self.bankCount { c.enabledBanks = Self().enabledBanks }
+        if let handles = c.bankHandleActions, handles.count != Self.bankCount {
+            c.bankHandleActions = Array(repeating: .init(.none), count: Self.bankCount)
+        }
         for i in c.bankNames.indices {
             c.bankNames[i] = String(c.bankNames[i].trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
             if c.bankNames[i].isEmpty { c.bankNames[i] = "Bank \(i + 1)" }
@@ -137,5 +147,12 @@ public struct BridgeConfiguration: Codable, Equatable, Sendable {
     public func action(for index: Int) -> BridgeAction {
         guard tones.indices.contains(index), enabledBanks.indices.contains(index / 4), enabledBanks[index / 4] else { return .init(.none) }
         return tones[index].action
+    }
+    /// A silent selector cannot identify a bank. A uniform mapping is safe without bank identity.
+    public func resolvedHandleAction(for bank: Int?) -> BridgeAction? {
+        let actions = handleActions
+        guard actions.count == Self.bankCount else { return nil }
+        if let bank, actions.indices.contains(bank) { return actions[bank] }
+        return actions.allSatisfy { $0 == actions[0] } ? actions[0] : nil
     }
 }

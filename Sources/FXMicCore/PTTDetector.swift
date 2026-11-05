@@ -14,7 +14,8 @@ public struct PTTDetector: PTTDetecting {
     private let configuration: BridgeConfiguration
     public init(configuration: BridgeConfiguration) { self.configuration = configuration.validated() }
     public mutating func update(rmsDB: Double, time: Double, suppress: Bool) -> Bool? {
-        guard configuration.pttEnabled else { return nil }
+        // Always observe sound activity, even when the selected handle action is None.
+        // Mapping/output policy belongs to the router and dispatcher, not the detector.
         // Input normally arrives in 40 ms blocks. Missing input must not count
         // as sustained activation, including after a format change or stall.
         if let lastInputTime, time <= lastInputTime || time - lastInputTime > 0.1 {

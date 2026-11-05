@@ -17,6 +17,10 @@ final class BridgeModel {
     private(set) var settings: MonitorSettings
     private(set) var bridgeConfiguration: BridgeConfiguration
     private(set) var detectedPTT = false
+    @ObservationIgnored private var handleRouter = BankHandleRouter()
+    private(set) var handleBank: Int?
+    private(set) var handleBankSource: BankHandleRouter.Source?
+    private(set) var handleRouteState = BankHandleRouter.State.waitingForQuiet
     private(set) var detectedTone: Int?
     private(set) var toneCounts = [Int](repeating: 0, count: BridgeConfiguration.controlCount)
     private(set) var lastRecognizedControl: Int?
@@ -74,7 +78,7 @@ final class BridgeModel {
         if !monitoringEnabled || sleeping { return "Monitoring paused" }
         if isStarting { return "Connecting…" }
         if isRunning && detectedTone != nil { return "TONE DETECTED · \(bridgeConfiguration.controlLabel(detectedTone!))" }
-        if isRunning && detectedPTT { return actions.pttHeld ? "PTT ACTIVE · key held" : "PTT ACTIVE · preview" }
+        if isRunning && detectedPTT { return actions.pttHeld ? "PTT ACTIVE · key held" : "HANDLE SIGNAL · " + handleStatus }
         if isRunning { return signalPresent ? "Signal present" : "Connected · no signal" }
         return "Ready"
     }
@@ -157,6 +161,28 @@ final class BridgeModel {
         profiles.update(configuration: configuration)
     }
 
+    var currentHandleAction: BridgeAction? { bridgeConfiguration.resolvedHandleAction(for: handleBank) }
+    var handleStatus: String {
+        switch handleRouteState {
+        case .unknownBank: return "Select a handle bank or play a sample"
+        case .unassigned: return "No keyboard action in this bank"
+        case .waitingForQuiet: return "Waiting for quiet before the next handle action"
+        case .ready: return "Ready · speak while holding the handle"
+        case .active: return actions.pttHeld ? "Key held · \(currentHandleAction?.label ?? "")" : "Signal active · \(actions.isArmed ? "see event log" : "preview only")"
+        }
+    }
+    func selectHandleBank(_ bank: Int?) {
+        actions.disable(reason: "Handle bank selected manually")
+        handleRouter.select(bank)
+        refreshHandleRouting()
+        log(handleBank.map { "Handle bank selected manually · " + bridgeConfiguration.bankNames[$0] + "; output off" } ?? "Handle bank cleared; awaiting a sample")
+    }
+    private func refreshHandleRouting() {
+        if handleBank != handleRouter.bank { handleBank = handleRouter.bank }
+        if handleBankSource != handleRouter.source { handleBankSource = handleRouter.source }
+        if handleRouteState != handleRouter.state { handleRouteState = handleRouter.state }
+    }
+
     func enableKeyboardOutput() {
         guard isRunning, permissions.accessibility, !diagnostics.isRecording, !hasUnsavedMappings, !micSetup.busy else { return }
         actions.arm()
@@ -169,9 +195,10 @@ final class BridgeModel {
         panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
         panel.allowedContentTypes = [.json]
         struct Check: Encodable {
-            let schemaVersion = 3
+            let schemaVersion = 4
             let profile: BridgeProfile
             let version: String; let input: String; let configuration: BridgeConfiguration
+            let handleBank: Int?; let handleBankSource: BankHandleRouter.Source?; let handleRouteState: BankHandleRouter.State
             let toneCounts: [Int]; let rmsDB: Double; let peakDB: Double; let events: [String]
             let savedAt: String; let recentMeasurements: [BridgeCheckFrame]
             let exportedAtUptime: Double; let keyboardOutputEnabled: Bool
@@ -181,7 +208,8 @@ final class BridgeModel {
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         let now = ProcessInfo.processInfo.systemUptime
         let check = Check(profile: profiles.selected, version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development",
-            input: selectedDeviceName, configuration: bridgeConfiguration, toneCounts: toneCounts,
+            input: selectedDeviceName, configuration: bridgeConfiguration, handleBank: handleBank, handleBankSource: handleBankSource,
+            handleRouteState: handleRouteState, toneCounts: toneCounts,
             rmsDB: readings.latest.rmsDB, peakDB: readings.latest.peakDB,
             events: events.map { "\(formatter.string(from: $0.time)) \($0.message)" },
             savedAt: formatter.string(from: Date()), recentMeasurements: checkFrames,
@@ -201,6 +229,7 @@ final class BridgeModel {
     func resetBridgeCheck() {
         actions.disable(reason: "New preview check")
         checkFrames.removeAll(); toneCounts = [Int](repeating: 0, count: BridgeConfiguration.controlCount); events.removeAll(); lastRecognizedControl = nil
+        handleRouter.reset(); refreshHandleRouting()
         beginControlTrace(reason: "Reset Check")
         log("Preview check started · PTT \(detectedPTT ? "active" : "inactive") · keyboard output off")
     }
@@ -335,6 +364,11 @@ final class BridgeModel {
                     self.lastControlBlockEndUptime = frame.time
                     self.controlTrace.append(frame, receivedAtUptime: ProcessInfo.processInfo.systemUptime)
                     if self.detectedPTT != frame.pttActive { self.detectedPTT = frame.pttActive }
+                    let handle = self.handleRouter.process(frame, configuration: self.bridgeConfiguration)
+                    self.refreshHandleRouting()
+                    if handle.bankChanged, let bank = self.handleBank {
+                        self.log("Handle bank identified · \(self.bridgeConfiguration.bankNames[bank]) · \(self.currentHandleAction?.label ?? "Unknown")", analysisUptime: frame.time)
+                    }
                     if let down = frame.pttTransition {
                         self.log("\(down ? "PTT DOWN" : "PTT UP") detected\(self.actions.isArmed ? "" : " · preview")",
                             analysisUptime: frame.pttEvaluation?.blockEndUptime)
@@ -346,7 +380,7 @@ final class BridgeModel {
                             frame.tone.confidence * 100, self.actions.isArmed ? "" : " · preview"), analysisUptime: frame.time)
                     }
                     if self.detectedTone != nil, frame.time - self.lastToneTime > 0.6 { self.detectedTone = nil }
-                    self.actions.process(frame, configuration: self.bridgeConfiguration)
+                    self.actions.process(frame, configuration: self.bridgeConfiguration, handle: handle)
                 }
             },
             onProbe: { [weak self] sessionID, windows in
@@ -402,6 +436,7 @@ final class BridgeModel {
         isStarting = false
         signalPresent = false
         detectedPTT = false; detectedTone = nil
+        handleRouter.reset(); refreshHandleRouting()
         readings.reset()
     }
 }

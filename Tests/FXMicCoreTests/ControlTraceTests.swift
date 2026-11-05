@@ -123,8 +123,8 @@ final class ControlTraceTests: XCTestCase {
         XCTAssertEqual(restarted.droppedSampleCount, 0)
     }
 
-    func testReportJSONKeepsFractionalTimesAndDisabledState() throws {
-        var config = BridgeConfiguration(); config.pttEnabled = false
+    func testReportJSONKeepsFractionalTimesAndSubthresholdState() throws {
+        var config = BridgeConfiguration(); config.pttEnabled = false; config.activationDB = -10
         var recorder = ControlTraceRecorder()
         recorder.begin(at: date, state: checkpoint(0, running: false), reason: "Capture started")
         for frame in frames(pulse(), configuration: config) {

@@ -15,8 +15,7 @@ struct MenuBarView: View {
             MenuLevelView(model: model)
             PermissionNotice(model: model)
             ProfilePicker(model: model)
-            Text("Handle: \(model.bridgeConfiguration.pttEnabled ? model.bridgeConfiguration.handleAction.label : "No keyboard action")")
-                .font(.caption)
+            HandleRoutingView(model: model, compact: true)
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     BridgeStyle.label("MAPPING REFERENCE")

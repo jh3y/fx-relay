@@ -40,15 +40,22 @@ struct MappingWindowView: View {
                             BankMappingsEditor(configuration: $draft, bank: page, selectedSlot: $slot)
                                 .id(model.profiles.library.selectedID)
                         } else if page == -1 {
-                            BridgeStyle.label("HANDLE / PUSH TO TALK")
-                            Text("The handle").font(.title.weight(.semibold))
-                            Toggle("Send keyboard actions from sound activity", isOn: $draft.pttEnabled)
-                            Text("For hold-Space voice input, choose Hold Key → Space. For Apple Dictation, leave this off and use a sample to toggle dictation; the physical handle still gates your mic.")
+                            BridgeStyle.label("HANDLE / BANK MAPPINGS")
+                            Text("A handle action for each bank").font(.title.weight(.semibold))
+                            Text("Profiles save all four banks. The active handle mapping follows the last played sample, or a bank you select explicitly. Orange alone does not identify the selected bank.")
                                 .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                            ActionEditor(title: "", action: $draft.handleAction).disabled(!draft.pttEnabled)
-                                .id(model.profiles.library.selectedID)
-                            Divider()
-                            Text("Quiet pauses can release PTT even while the handle is squeezed. This is signal-based detection, not a physical switch sensor.").font(.callout).foregroundStyle(.secondary)
+                            ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(draft.bankNames[bank]).font(.headline)
+                                        Text(draft.handleActions[bank].label).foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    Button("Edit handle") { page = bank; slot = -1 }
+                                }.padding(14).background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 8))
+                            }
+                            Text("Sound detection always runs. None means no keyboard action in that bank. Quiet pauses can release a held key; silence is not a physical handle-position sensor.")
+                                .font(.callout).foregroundStyle(.secondary)
                         } else if page == -2 {
                             DetectionSettingsView(configuration: $draft)
                         } else {
@@ -87,7 +94,7 @@ struct MappingWindowView: View {
         VStack(alignment: .leading, spacing: 8) {
             BridgeStyle.label("BANKS").padding(.bottom, 6)
             ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
-                Button { page = bank; slot = 0 } label: {
+                Button { page = bank; if slot >= 0 { slot = 0 } } label: {
                     HStack(spacing: 9) {
                         Text(String(format: "%02d", bank + 1)).font(.system(.caption, design: .monospaced))
                             .foregroundStyle(page == bank ? BridgeStyle.orange : Color.secondary)
@@ -100,7 +107,7 @@ struct MappingWindowView: View {
                 }.buttonStyle(.plain)
             }
             Divider().padding(.vertical, 10)
-            navigation("Handle", icon: "hand.draw", page: -1)
+            navigation("Handle banks", icon: "hand.draw", page: -1)
             navigation("Detection", icon: "slider.horizontal.3", page: -2)
             navigation("Mic & Workflows", icon: "wrench.and.screwdriver", page: -3)
             Spacer(minLength: 24)
@@ -108,7 +115,7 @@ struct MappingWindowView: View {
             Text("FX → BANK\nSAMPLE → SLOT\nPLAY → ACTION")
                 .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("FX RELAY / 0.5").font(.system(size: 9, design: .monospaced)).tracking(1.2).foregroundStyle(.tertiary)
+            Text("FX RELAY / 0.6").font(.system(size: 9, design: .monospaced)).tracking(1.2).foregroundStyle(.tertiary)
         }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
     }
     private func navigation(_ title: String, icon: String, page value: Int) -> some View {

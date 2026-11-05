@@ -25,9 +25,10 @@ struct SpaceTestView: View {
                  ? "Posts one Space down, then one Space up after 1 second. Receipt is verified here in the event log."
                  : "Click Send Space, then focus your target app within 3 seconds. Space is held there for 1 second and released to the same app. The receipt counters below only verify events sent to This app.")
                 .font(.caption).foregroundStyle(.secondary)
+            Text("These counters are only for this manual test. Handle detection and dispatched keys appear in Control Events and the event log above.").font(.caption).foregroundStyle(.secondary)
             HStack(spacing: 12) {
-                Label("Received DOWN: \(model.receivedTestDowns)", systemImage: "arrow.down")
-                Label("Received UP: \(model.receivedTestUps)", systemImage: "arrow.up")
+                Label("Manual test DOWN: \(model.receivedTestDowns)", systemImage: "arrow.down")
+                Label("Manual test UP: \(model.receivedTestUps)", systemImage: "arrow.up")
             }.font(.system(.caption2, design: .monospaced)).foregroundStyle(.secondary)
         }
     }

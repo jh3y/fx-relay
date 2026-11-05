@@ -27,7 +27,7 @@ final class ControlDetectorTests: XCTestCase {
         XCTAssertNil(ptt.update(rmsDB: -80, time: 1.3, suppress: false))
         XCTAssertNil(ptt.update(rmsDB: -20, time: 1.4, suppress: true))
     }
-    func testSpeechResumesBeforeReleaseAndDisabledPTT() {
+    func testSpeechResumesBeforeReleaseAndNoActionStillDetects() {
         var immediate = BridgeConfiguration(); immediate.activationDelay = 0
         var ptt = PTTDetector(configuration: immediate)
         XCTAssertEqual(ptt.update(rmsDB: -40, time: 0, suppress: false), true)
@@ -36,9 +36,10 @@ final class ControlDetectorTests: XCTestCase {
         XCTAssertNil(ptt.update(rmsDB: -90, time: 0.9, suppress: false))
         XCTAssertNil(ptt.update(rmsDB: -90, time: 1.5, suppress: false))
         XCTAssertEqual(ptt.update(rmsDB: -90, time: 1.8, suppress: false), false)
-        var c = BridgeConfiguration(); c.pttEnabled = false
-        var disabled = PTTDetector(configuration: c)
-        XCTAssertNil(disabled.update(rmsDB: -20, time: 0, suppress: false))
+        var c = BridgeConfiguration(); c.pttEnabled = false; c.activationDelay = 0
+        var preview = PTTDetector(configuration: c)
+        XCTAssertEqual(preview.update(rmsDB: -20, time: 0, suppress: false), true)
+        XCTAssertEqual(c.resolvedHandleAction(for: nil)?.kind, BridgeAction.Kind.none)
     }
     func testEveryCueFiresOnceAndDoesNotActivatePTTAtDifferentRates() {
         for rate in [32000.0, 44100, 48000, 96000] {

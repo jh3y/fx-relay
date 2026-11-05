@@ -4,6 +4,7 @@ public enum ProfileTemplate: String, CaseIterable, Identifiable {
     case codex = "Codex", claude = "Claude Code · Tap", appleDictation = "Apple Dictation"
     case dictationShortcut = "Dictation Shortcut", blank = "Blank"
     case agentVoice = "Hold-Space Voice", commandVoice = "Command Voice"
+    case bankWorkflows = "Agent Banks"
     public var id: String { rawValue }
     public static let starters: [Self] = [.codex, .claude, .appleDictation]
     /// Stable identities allow starters to be added once without renaming existing profiles.
@@ -19,6 +20,7 @@ public enum ProfileTemplate: String, CaseIterable, Identifiable {
         case .dictationShortcut: return "Match this shortcut to MacWhisper, Superwhisper or another dictation app."
         case .agentVoice: return "Sound-based hold Space for apps accepting key down/up. Terminal repeat-based PTT may not work."
         case .commandVoice: return "Type /voice or /compact, then submit separately with Return."
+        case .bankWorkflows: return "Different handle actions per FX bank. Play a sample after switching. Claude hold-key compatibility needs a target-app check."
         case .blank: return "Start with sixteen empty sample mappings and no handle key."
         }
     }
@@ -57,6 +59,17 @@ public enum ProfileTemplate: String, CaseIterable, Identifiable {
                                     .init(126, label: "↑"), .init(125, label: "↓")].enumerated() {
                 c.tones[8 + offset].action = .init(chord.modifiers == 0 ? .keystroke : .shortcut, chord)
             }
+        }
+        if self == .bankWorkflows {
+            c.bankNames = ["Claude · FX 1", "Codex · FX 2", "Dictation · FX 3", "FX 4"]
+            c.handleActions = [.init(.holdKey, .space), .init(.none), .init(.none), .init(.none)]
+            c.tones[0].action = enter; c.tones[1].action = escape; c.tones[2].action = interrupt
+            c.tones[4].action = .init(.keystroke, .init(100, label: "F8 · Voice"))
+            c.tones[5].action = enter; c.tones[6].action = escape
+            var dictation = BridgeAction(.shortcut, .init(2, modifiers: 3, label: "⌃⌥D"))
+            dictation.delivery = .systemShortcut
+            c.tones[8].action = dictation; c.tones[9].action = enter; c.tones[10].action = escape
+            // Sample 4 stays unassigned in every bank: it identifies the bank without a macro.
         }
         var profile = BridgeProfile(name: self == .blank ? "New Profile" : rawValue, configuration: c)
         profile.template = rawValue

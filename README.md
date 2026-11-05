@@ -4,21 +4,22 @@ A small native macOS utility that turns the **Teenage Engineering EP-2350 FX-MIC
 
 Squeeze the handle to gate your microphone. Play a sample to send a key, shortcut or command. Choose a profile for your workflow. **Your agent or dictation app handles speech; the bridge only turns signals into actions.**
 
-**macOS 15+ · Swift / SwiftUI · Four banks · Sixteen mappings · Local profiles**
+**macOS 15+ · Swift / SwiftUI · Four banks · Sixteen samples · Per-bank handle actions · Local profiles**
 
 **Made possible by [tink-agent](https://github.com/tajchert/tink-agent), by Michal Tajchert.** Its exploration of the FX-MIC as an agent controller and its sample/pitch configuration were the starting point for this project. FX Relay builds on that inspiration with a focused native controller, diagnostic tooling and configurable workflows. [Acknowledgements and reference license →](THIRD_PARTY_NOTICES.md)
 
 [Get started](docs/GETTING_STARTED.md) · [Profiles](docs/PROFILES.md) · [Dictation options](docs/VOICE_OPTIONS.md) · [Managed Macs / CLI](docs/MANAGED_MACS.md) · [Build](docs/DEVELOPMENT.md) · [Progress](docs/HISTORY.md)
 
-<img src="docs/previews/v0.5.0/mappings-base.png" alt="Mapping editor with four banks, four sample slots and an editable action" width="100%">
+<img src="docs/previews/v0.6.0/bank-handle.png" alt="Mapping editor with a separate handle action for each FX bank" width="100%">
 
-*Actual SwiftUI view rendered offscreen with the Codex starter profile. This image demonstrates the layout, not a live hardware test.*
+*Actual SwiftUI view rendered offscreen with the Agent Banks starter profile. This image demonstrates the layout, not a live hardware test.*
 
 ## A mic with something extra
 
 - **One setup, four banks.** Install the standard cue pack from the app. Pick an FX bank and sample slot on the mic; PLAY fires the configured action.
+- **A handle action per bank.** Give FX 1 a key hold and FX 2 no keyboard action, or configure all four independently. A sample identifies the bank after switching FX.
 - **Your controls, your mappings.** Hold Key, Keystroke, Shortcut, Type Text, optional delayed Enter, or None. Record shortcuts directly in the editor.
-- **Starter workflows.** Codex, Claude Code · Tap and Apple Dictation are included. Duplicate, rename, edit and share profiles as JSON.
+- **Starter workflows.** Codex, Claude Code · Tap, Apple Dictation and Agent Banks are included. Duplicate, rename, edit and share profiles as JSON.
 - **See what the mic is doing.** Live RMS/peak, amplitude history, spectrum, cue counters and event logs. Diagnostic exports contain measurements, not audio recordings.
 - **A small macOS utility.** Custom menu-bar status mark, light/dark UI, explicit input selection and background analysis. No account or package dependencies.
 
@@ -40,9 +41,11 @@ Squeeze the handle to gate your microphone. Play a sample to send a key, shortcu
 | **Claude Code · Tap** | Return · Space record/send · Escape · Control+C | Enable `/voice tap`; the second Space can submit the prompt |
 | **Apple Dictation** | ⌃⌥D dictation toggle · Escape · Return · Undo | Set the same shortcut in macOS Keyboard settings |
 
-All three leave the handle's keyboard mapping off: the handle still gates the analogue mic. Every mapping is editable, and generic Hold-Space, Command Voice, Blank and Dictation Shortcut templates are also available. Text commands in starter profiles leave automatic Enter off.
+Those three leave the handle's keyboard mapping off: the handle still gates the analogue mic. Every mapping is editable, and generic Hold-Space, Command Voice, Blank and Dictation Shortcut templates are also available. Text commands in starter profiles leave automatic Enter off.
 
 The second bank supplies commands such as `/voice` and `/compact`; the third provides navigation keys. The fourth is available for your own mappings. Apple Dictation repeats its four shortcuts across all banks. [View all defaults and compatibility notes →](docs/PROFILES.md)
+
+**Agent Banks** puts Claude in FX 1, Codex in FX 2 and Dictation in FX 3 within one profile. It demonstrates Hold Space in FX 1 and no handle key elsewhere. Claude's terminal hold mode needs key repeats, so this example is configurable, not a claim of tested Claude PTT compatibility. Choose a bank → **Handle** to edit it. Sample 4 is unassigned in every bank so it can identify that bank without sending a macro. [Bank routing and handle checks →](docs/PROFILES.md#handle-actions-per-bank)
 
 ## How it works
 
@@ -51,7 +54,7 @@ FX-MIC → audio adapter → local signal analysis → control event → configu
             └────────→ your agent / dictation app receives its own mic input
 ```
 
-The orange button selects an FX preset. The sample selector chooses one of four slots. PLAY emits its cue. Pitch-shifted presets give the same samples different identities across four banks. No-FX and FX 1 share a bank. The UI shows **last played**, because silent selector changes cannot be observed.
+The orange button selects an FX preset. The sample selector chooses one of four slots. PLAY emits its cue. Pitch-shifted presets give the same samples different identities across four banks. No-FX and FX 1 share a bank. The UI shows **last played**, because silent selector changes cannot be observed. Handle routing follows that last detected bank or an explicit manual selection. With different handle mappings and no known bank, handle actions wait for identification.
 
 The bridge does not transcribe, route, mute, replace or upload your audio. Cue sounds remain in the signal heard by your other apps.
 

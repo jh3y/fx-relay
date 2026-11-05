@@ -12,7 +12,7 @@ struct BankMappingsEditor: View {
                 Text(String(format: "%02d", bank + 1))
                     .font(.system(size: 34, weight: .light, design: .monospaced)).foregroundStyle(BridgeStyle.orange)
                 VStack(alignment: .leading, spacing: 7) {
-                    BridgeStyle.label("EDITING BANK / FOUR SAMPLES")
+                    BridgeStyle.label("EDITING BANK / HANDLE + SAMPLES")
                     HStack(spacing: 8) {
                         TextField("Bank name", text: $configuration.bankNames[bank])
                             .textFieldStyle(.plain).font(.system(size: 25, weight: .semibold))
@@ -20,11 +20,18 @@ struct BankMappingsEditor: View {
                     }
                 }
                 Spacer(minLength: 12)
-                Toggle("Actions", isOn: $configuration.enabledBanks[bank]).toggleStyle(.switch).controlSize(.small)
-                    .fixedSize().help("Disable this bank's actions while keeping preview recognition active")
+                Toggle("Samples", isOn: $configuration.enabledBanks[bank]).toggleStyle(.switch).controlSize(.small)
+                    .fixedSize().help("Disable sample actions only; configure the handle separately")
             }
             Text(bank == 0 ? "No FX light and FX 1 share this bank. Select a sample on the mic, then press PLAY." : "Select FX \(bank + 1) with orange. Select a sample, then press PLAY to fire its action.")
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Picker("Configure", selection: Binding(get: { selectedSlot < 0 }, set: { selectedSlot = $0 ? -1 : 0 })) {
+                Text("Samples").tag(false)
+                Text("Handle").tag(true)
+            }.pickerStyle(.segmented).frame(width: 250)
+            if selectedSlot < 0 {
+                BankHandleEditor(configuration: $configuration, bank: bank)
+            } else {
             HStack(spacing: 10) {
                 ForEach(0..<4) { sample in
                     Button { selectedSlot = sample } label: {
@@ -67,8 +74,9 @@ struct BankMappingsEditor: View {
                 }
             }.font(.callout)
             if !configuration.enabledBanks[bank] {
-                Text("This bank is in preview only. Enable Actions above when you want these mappings to fire.")
+                Text("This bank is in preview only. Enable Samples above when you want these mappings to fire.")
                     .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
             }
         }
     }

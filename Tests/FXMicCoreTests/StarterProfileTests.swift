@@ -2,13 +2,13 @@ import XCTest
 @testable import FXMicCore
 
 final class StarterProfileTests: XCTestCase {
-    func testFreshInstallHasThreeStartersAllBanksAndNoAutomaticSubmit() throws {
+    func testFreshInstallHasWorkflowStartersAllBanksAndNoAutomaticSubmit() throws {
         let suite = "FXMIC.starters.\(UUID())"
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let store = ProfileStore(defaults: defaults)
         let library = try store.load(legacy: .init(), includeLegacy: false)
-        XCTAssertEqual(library.profiles.map(\.name), ProfileTemplate.starters.map(\.rawValue))
+        XCTAssertEqual(library.profiles.map(\.name), (ProfileTemplate.starters + [.bankWorkflows]).map(\.rawValue))
         XCTAssertEqual(library.selected.name, "Codex")
         XCTAssertTrue(library.profiles.allSatisfy { $0.configuration.enabledBanks == [true,true,true,true] })
         XCTAssertTrue(library.profiles.allSatisfy { !$0.configuration.pttEnabled })
@@ -27,7 +27,7 @@ final class StarterProfileTests: XCTestCase {
         var loaded = try store.load(legacy: .init())
         XCTAssertEqual(loaded.selectedID, old.selectedID)
         XCTAssertEqual(loaded.profiles.first, old.profiles.first)
-        XCTAssertEqual(loaded.profiles.count, 4)
+        XCTAssertEqual(loaded.profiles.count, 5)
         loaded.profiles.removeAll { $0.id == ProfileTemplate.claude.starterID }
         try store.save(loaded)
         XCTAssertEqual(try store.load(legacy: .init()), loaded)

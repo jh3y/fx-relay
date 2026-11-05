@@ -23,6 +23,7 @@ final class ProfileManager {
     func update(configuration: BridgeConfiguration, name: String? = nil) {
         var next = library
         guard let index = next.profiles.firstIndex(where: { $0.id == next.selectedID }) else { return }
+        if next.profiles[index].configuration != configuration.validated() { next.profiles[index].template = nil }
         next.profiles[index].configuration = configuration.validated()
         if let name { next.profiles[index].name = name.trimmingCharacters(in: .whitespacesAndNewlines) }
         commit(next)

@@ -36,3 +36,13 @@ Output is tied to the focused target process; switching apps disarms it. Returni
 Microphone permission allows observation; Accessibility permission permits synthesized keys. Each has an explanation and System Settings button in the app. No recording permission is requested by this setup for a remote service.
 
 [Starter profiles](PROFILES.md) explain Codex, Claude and Apple Dictation. Their recognition stays in the target service. The bridge only sends controls.
+
+## 4. Check handle detection separately
+
+1. Open Signal Monitor with keyboard output off. Choose the desired **Handle bank** manually, or identify it by playing a sample.
+2. Wait quietly, then squeeze and **speak for a few seconds**. Confirm the input meter rises and **Sound detector: ACTIVE** appears. A silent squeeze is not a reliable test; the mic has no digital handle-switch event.
+3. Stop speaking and release. The detector should return to idle after the configured release delay, initially 900 ms. Use **Edit Mappings → Detection** for PTT activation/confirmation/release settings; the monitor's signal threshold only controls signal start/end logging.
+4. Review the bank's **Handle** mapping. For a keyboard check, use Hold Space and arm output into a disposable TextEdit document during the countdown. Speaking should post a Space down, followed by an up after silence. The event log records dispatch; the separate **Manual test DOWN/UP** counters are only for the manual TEST SPACE button.
+5. Switching focus back to the bridge disarms output. Use **Save Bridge Check** to export detector traces, bank identity, mapping and event logs if the result differs.
+
+Receiving a Space event does not establish voice compatibility in a terminal. Claude's terminal hold mode uses key repeats, while generic Hold Key sends one down/up pair. The Claude Code · Tap starter is the separate toggle workflow. Sound-based activation can miss the beginning of speech and release during pauses; it does not establish true physical push-to-talk.

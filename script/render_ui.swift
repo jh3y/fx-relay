@@ -12,11 +12,17 @@ import SwiftUI
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let model = BridgeModel(defaults: defaults)
-        let output = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "docs/previews/v0.5.0")
+        let output = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "docs/previews/v0.6.0")
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
-        func render(_ name: String, page: Int, width: CGFloat, height: CGFloat, dark: Bool = false) throws {
+        func render(_ name: String, page: Int, slot: Int = 0, surface: String = "mappings", width: CGFloat, height: CGFloat, dark: Bool = false) throws {
             app.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
-            let view = MappingWindowView(model: model, initialPage: page)
+            let content: AnyView
+            switch surface {
+            case "monitor": content = AnyView(SignalMonitorView(model: model))
+            case "menu": content = AnyView(MenuBarView(model: model))
+            default: content = AnyView(MappingWindowView(model: model, initialPage: page, initialSlot: slot))
+            }
+            let view = content
                 .environment(\.colorScheme, dark ? .dark : .light)
                 .frame(width: width, height: height)
                 .background(Color(nsColor: .windowBackgroundColor))
@@ -35,6 +41,12 @@ import SwiftUI
         }
         try render("mappings-base", page: 0, width: 1020, height: 740)
         try render("mappings-fx4-small", page: 3, width: 860, height: 560)
+        model.profiles.select(ProfileTemplate.bankWorkflows.starterID)
+        try render("bank-handle", page: 0, slot: -1, width: 1020, height: 740)
+        try render("bank-handle-small", page: 0, slot: -1, width: 860, height: 560)
+        try render("handle-overview", page: -1, width: 1020, height: 740, dark: true)
+        try render("signal-monitor", page: 0, surface: "monitor", width: 760, height: 1000)
+        try render("menu", page: 0, surface: "menu", width: 380, height: 870)
         model.profiles.select(ProfileTemplate.appleDictation.starterID)
         try render("apple-dictation", page: 0, width: 1020, height: 740)
         try render("setup-dark", page: -3, width: 1020, height: 740, dark: true)

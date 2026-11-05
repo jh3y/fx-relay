@@ -17,6 +17,7 @@ The build creates a proper `.app` bundle, includes AppIcon.icns and all cue-pack
 | AudioDeviceManager / AudioCaptureEngine | Enumerate inputs and capture the chosen device without changing system audio |
 | SignalAnalyzer / AudioSampleProcessor | PCM, RMS/peak, waveform and spectrum off the main thread |
 | ControlAnalyzer / PTTDetector / ToneDetector | Fixed analysis blocks, sound gating and conservative cue recognition |
+| BankHandleRouter | Last-cue/manual bank identity, per-bank handle routing, quiet-before-rearm and release decisions |
 | ActionDispatcher / HeldKeyLease / TextActionRunner | Focused output, balanced events, timeout release and cancellable typing |
 | ProfileStore / ProfileManager | Validated local JSON, starters, migration and editable mappings |
 | CuePackInstaller / MicSetupModel | Native inspection, backup, install and restore of the standard pack |
@@ -42,3 +43,5 @@ The local build is not a notarized public distribution. Shipping a trusted downl
 Historical development snapshots remain in the originating workspace. [Progress](HISTORY.md) records milestones. The originating workspace’s snapshot tool preserves source, app ZIP and hashes without replacing old snapshots. Public exports omit local snapshots, diagnostic reports and device backups. `script/export_repository.py` creates a new curated directory and manifest; it refuses to overwrite an existing directory and does not create/push a remote.
 
 The product name became **FX Relay** in v0.5.0. The executable/module (`FXMicBridge`), bundle identifier (`com.jhey.fxmicbridge`), preference keys and existing backup directory keep their original names so saved settings and earlier snapshots continue to work. The built application is `dist/FX Relay.app`.
+
+Profile JSON schema 3 stores four handle actions. Legacy handle settings are retained for decoding and migrate to the same effective action in each bank. ProfileStore writes a new v4 preference key without changing older library bytes. PTTDetector always observes sound; BankHandleRouter and ActionDispatcher separately decide mapping and keyboard output. Bridge Check schema 4 includes handle bank, identification source and routing state.

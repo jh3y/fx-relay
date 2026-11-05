@@ -1,8 +1,31 @@
 # Starter profiles
 
-Codex, Claude Code · Tap and Apple Dictation are added on first use. On upgrade, they are added once without changing the selected profile or its mappings. Deleted starters are not recreated on every launch; use **… → New from Template** to add another copy. All templates use the four-bank pack. Existing profiles retain their bank switches.
+Codex, Claude Code · Tap, Apple Dictation and Agent Banks are added on first use. On upgrade, they are added once without changing the selected profile or its mappings. Deleted starters are not recreated on every launch; use **… → New from Template** to add another copy. All templates use the four-bank pack. Existing profiles retain their bank switches.
 
-Open Edit Mappings, choose the profile, select a bank and sample, edit its action, then Apply Changes. The profile menu also offers Rename, Duplicate, Delete, Import JSON and Export JSON. Handle and Detection have separate pages. Editing disables output; profile switching is unavailable while changes are unapplied. Closing the editor discards its draft.
+Open Edit Mappings, choose the profile, select a bank and sample, edit its action, then Apply Changes. The profile menu also offers Rename, Duplicate, Delete, Import JSON and Export JSON. Each bank has Samples and Handle tabs. Handle banks gives an overview of all four handle mappings; Detection contains the sound thresholds and timing. Editing disables output; profile switching is unavailable while changes are unapplied. Closing the editor discards its draft.
+
+## Handle actions per bank
+
+A profile contains four banks, each with four sample actions and its own handle action. Choose a bank, open **Handle**, select an action and Apply Changes. **None** leaves the handle as a physical microphone gate without sending keys. The bank's **Samples** switch controls sample actions only. Detection runs even when the handle action is None or keyboard output is off.
+
+The handle bank follows the last recognized sample. After pressing the silent orange selector, **play a sample in the new bank before using its handle mapping**. An unassigned sample still identifies its bank without firing a macro. The app cannot observe a silent FX change; until a new cue arrives, it retains the last detected bank. No-FX and FX 1 share the first bank.
+
+You can also choose **Handle bank** explicitly in the menu bar or Signal Monitor. Manual selection disarms keyboard output; arm again in your target app. The next sample replaces that selection. A restart or capture reset forgets the bank. When handle mappings differ, an unknown bank sends no handle action. If all four mappings are identical, that common mapping works without identifying a bank.
+
+Changing bank or mapping releases held keys and cancels pending typing/Enter. The detector must observe quiet before a fresh sound activation can fire the new handle action. Profile changes also disarm output. Editing the bank shown in the mapping window does not select the live handle bank.
+
+**This remains sound-based detection.** A silent squeeze may show no change. Speaking must exceed the PTT activation threshold for the confirmation interval; silence can release the key even while the handle stays squeezed. The Signal Monitor separately shows sound-detector state, the selected handle action and whether a key was posted. Its manual TEST SPACE counters count only that button's test events. See the [handle check](GETTING_STARTED.md#4-check-handle-detection-separately).
+
+## Agent Banks
+
+| Bank | Handle | Samples 1–4 |
+| --- | --- | --- |
+| No-FX / FX 1 · Claude | Hold Space | Return · Escape · Control+C · None |
+| FX 2 · Codex | None | F8 · Return · Escape · None |
+| FX 3 · Dictation | None | ⌃⌥D system shortcut · Return · Escape · None |
+| FX 4 | None | All unassigned |
+
+Sample 4 can identify any bank without sending a macro. This starter is added once on upgrade without changing the selected profile or existing mappings. It does not switch applications. Configure Apple Dictation's shortcut and check Codex voice support as described below. Claude's terminal hold mode requires repeats; the single down/up example demonstrates per-bank configuration, not verified Claude compatibility. Use the separate Claude Code · Tap workflow when that is the desired interaction.
 
 ## Codex
 
@@ -32,4 +55,4 @@ Arm output, focus a blank text field, and play sample 1. Wait for Apple's indica
 
 Actions: None, Hold Key, Keystroke, Shortcut and Type Text. Hold Key releases on the inferred handle release or sample ending. Text is one line with optional delayed Enter, disabled by default in starters. The bridge never executes shell commands. Ordinary actions target the armed app; explicit system shortcuts enter the macOS event stream.
 
-Profile JSON schema 2 is exported; schema 1 remains importable. Imports are validated and added as new copies, never silently overwriting an existing profile. They cannot arm output, select an input or write mic files. The example JSON files in [profiles/](../profiles/) are generated from the same Swift templates used in the app.
+Profile JSON schema 3 is exported; schemas 1 and 2 remain importable. Older profiles inherit their previous effective handle mapping in all four banks. The app saves the upgraded library under `bridge.profiles.v4`, leaving previous library bytes intact for older versions. Imports are validated and added as new copies, never silently overwriting an existing profile. They cannot arm output, select an input or write mic files. The example JSON files in [profiles/](../profiles/) are generated from the same Swift templates used in the app.

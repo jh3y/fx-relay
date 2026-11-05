@@ -11,6 +11,8 @@ struct BridgeControlsView: View {
                 Spacer()
                 Text(model.actions.bridgeStatus).font(.caption).foregroundStyle(.secondary)
             }
+            HandleRoutingView(model: model)
+            Divider()
             ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
                 HStack {
                     Text(model.bridgeConfiguration.bankNames[bank]).font(.caption).lineLimit(1).frame(width: 110, alignment: .leading)

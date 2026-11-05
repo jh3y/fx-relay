@@ -13,6 +13,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.3.0 | Two tone banks, profiles, JSON and text actions |
 | 0.4.0 | Dedicated mapping window, four-bank pack, Dictation template and first icon |
 | 0.5.0 | Renamed FX Relay; starter profiles, native four-bank setup, custom menu-bar identity, UI polish and repository preparation |
+| 0.6.0 | Per-bank handle actions, Agent Banks starter, independent sound detection and clearer routing/keyboard diagnostics |
 
 ## The interface, then and now
 
@@ -21,6 +22,10 @@ v0.4.0 introduced a separate mapping editor after the combined diagnostic/editor
 <img src="previews/v0.4.0/mappings-base.png" alt="v0.4.0 mapping editor" width="48%"> <img src="previews/v0.5.0/mappings-base.png" alt="v0.5.0 mapping editor" width="48%">
 
 Both images are offscreen renders of their actual SwiftUI views, not live microphone screenshots.
+
+v0.6.0 adds a Handle tab within each bank, so one profile can use different handle actions across workflows.
+
+<img src="previews/v0.6.0/bank-handle.png" alt="v0.6.0 per-bank handle editor, rendered offscreen" width="100%">
 
 ## Findings that shaped the design
 

@@ -76,7 +76,12 @@ final class ActionDispatcher {
         if wasEnabled { onEvent?("Keyboard output disabled · \(reason)") }
     }
 
-    func process(_ frame: ControlFrame, configuration: BridgeConfiguration) {
+    func process(_ frame: ControlFrame, configuration: BridgeConfiguration, handle: BankHandleRouter.Decision) {
+        if handle.release { release(id: 0, reason: handle.bankChanged ? "Handle bank changed" : "Handle signal ended or mapping changed") }
+        if handle.bankChanged {
+            textRunner.cancel()
+            for id in Array(held.keys) { release(id: id, reason: "Bank changed") }
+        }
         guard isArmed else { return }
         guard frame.time >= armedAt else { return }
         checkFocus()
@@ -95,7 +100,7 @@ final class ActionDispatcher {
             }
             return
         }
-        if frame.pttTransition == true { activate(configuration.handleAction, id: 0) }
+        if let action = handle.activation { activate(action, id: 0) }
         if !frame.pttActive { release(id: 0, reason: "PTT ended") }
         for id in Array(held.keys) where id > 0 && frame.tone.heldControl != id - 1 {
             release(id: id, reason: "Tone ended")

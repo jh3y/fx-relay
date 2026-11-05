@@ -31,7 +31,7 @@ public enum ProfileError: LocalizedError {
 /// JSON is configuration only. Imported profiles are validated and added as a copy;
 /// no file can arm output, choose a target process, or execute a program.
 public enum ProfileCodec {
-    private struct Document: Codable { var schemaVersion = 2; var profile: BridgeProfile }
+    private struct Document: Codable { var schemaVersion = 3; var profile: BridgeProfile }
     public static func validate(_ profile: BridgeProfile) throws {
         func require(_ condition: Bool, _ message: String) throws {
             if !condition { throw ProfileError.invalid(message) }
@@ -46,7 +46,7 @@ public enum ProfileCodec {
                             "Cue frequencies overlap. Separate them by more than twice the tolerance plus 30 Hz.")
             }
         }
-        for action in [c.handleAction] + c.tones.map(\.action) {
+        for action in [c.handleAction] + c.handleActions + c.tones.map(\.action) {
             try require(action.delivery != .systemShortcut || action.kind == .shortcut,
                         "System delivery is available only for Shortcut actions.")
             try require(action.chord.keyCode <= 127 && action.chord.modifiers <= 15 && action.chord.label.count <= 80,
@@ -67,7 +67,7 @@ public enum ProfileCodec {
     public static func decode(_ data: Data) throws -> BridgeProfile {
         guard data.count <= 262144 else { throw ProfileError.invalid("Profile file is larger than 256 KB.") }
         let document = try JSONDecoder().decode(Document.self, from: data)
-        guard (1 ... 2).contains(document.schemaVersion) else { throw ProfileError.invalid("Unsupported profile version.") }
+        guard (1 ... 3).contains(document.schemaVersion) else { throw ProfileError.invalid("Unsupported profile version.") }
         try validate(document.profile)
         return document.profile
     }
@@ -75,11 +75,11 @@ public enum ProfileCodec {
 
 public final class ProfileStore {
     private let defaults: UserDefaults
-    private let key = "bridge.profiles.v3"
+    private let key = "bridge.profiles.v4"
     private let starterKey = "bridge.starters.v1"
     public init(defaults: UserDefaults = .standard) { self.defaults = defaults }
     public func load(legacy: BridgeConfiguration, includeLegacy: Bool = true) throws -> ProfileLibrary {
-        let data = defaults.data(forKey: key) ?? defaults.data(forKey: "bridge.profiles.v2") ?? defaults.data(forKey: "bridge.profiles.v1")
+        let data = defaults.data(forKey: key) ?? defaults.data(forKey: "bridge.profiles.v3") ?? defaults.data(forKey: "bridge.profiles.v2") ?? defaults.data(forKey: "bridge.profiles.v1")
         var library: ProfileLibrary
         if let data { library = try JSONDecoder().decode(ProfileLibrary.self, from: data) }
         else if includeLegacy { library = ProfileLibrary(legacy: legacy) }
@@ -100,6 +100,14 @@ public final class ProfileStore {
             }
             try save(library)
             defaults.set(true, forKey: starterKey)
+        }
+        if !defaults.bool(forKey: "bridge.bank-starter.v1") {
+            if library.profiles.count < 32 && !library.profiles.contains(where: { $0.id == ProfileTemplate.bankWorkflows.starterID }) {
+                var profile = ProfileTemplate.bankWorkflows.makeProfile(); profile.id = ProfileTemplate.bankWorkflows.starterID
+                library.profiles.append(profile)
+            }
+            try save(library)
+            defaults.set(true, forKey: "bridge.bank-starter.v1")
         }
         return library
     }
