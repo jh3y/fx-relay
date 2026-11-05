@@ -4,9 +4,9 @@
 
 FX Relay would not exist without [tink-agent](https://github.com/tajchert/tink-agent), by **Michal Tajchert**. That project demonstrated the FX-MIC's potential as a controller for agent workflows and provided the reference configuration that helped us investigate sample playback and pitch-based action banks. We are grateful for the work and for making it available to others.
 
-FX Relay's implementation, diagnostic experiments, configurable profiles and visual identity were developed separately for this project. Its focus is signal-to-action control, with speech handling left to the user's chosen application. That different direction does not diminish the foundational contribution of tink-agent.
+FX Relay does not import or ship tink-agent's Python application or its sample recordings. The Swift application, diagnostic tooling, profiles and visual identity were developed for this project. Its focus is signal-to-action control, with speech handling left to the user's chosen application.
 
-The [upstream MIT license](https://github.com/tajchert/tink-agent/blob/main/LICENSE) is reproduced in [licenses/tink-agent-MIT.txt](licenses/tink-agent-MIT.txt) alongside this attribution to the reference project and configuration approach.
+The hardware JSON is a more direct adaptation: our pack retains the reference's four sample definitions and first two SAMPLE presets (0 and +10.5 semitones), changes the pack name, and adds two presets in v3. The WAVs themselves were generated locally. We therefore retain the [upstream MIT license](https://github.com/tajchert/tink-agent/blob/main/LICENSE) in [licenses/tink-agent-MIT.txt](licenses/tink-agent-MIT.txt) for the adapted configuration, as well as crediting the project's broader inspiration. This is not a runtime dependency or a claim that its application is bundled with FX Relay.
 
 ## Hardware documentation and assets
 

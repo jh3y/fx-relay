@@ -24,7 +24,7 @@ Squeeze the handle to gate your microphone. Play a sample to send a key, shortcu
 
 ## Get started
 
-1. Build and open the app using the commands below. Grant Microphone and Accessibility permissions when requested.
+1. Build using the commands below, then move **FX Relay.app** from `dist` into **Applications**, your personal `~/Applications` folder, or another stable folder you own. Open that copy and look in the menu bar. Grant Microphone and Accessibility permissions when requested.
 2. Connect the mic's analogue output to a compatible input adapter and select that adapter in the menu bar. Configure your target app's microphone separately.
 3. For initial setup, connect USB-C and expose **FX MIC DISK**. Open **Edit Mappings → Mic & Workflows → Choose FX MIC DISK**. Review the inspection, then **Install Four Banks**. Existing known packs can be upgraded; custom files are left for review. The app keeps a local backup.
 4. Eject the disk in Finder so the mic reloads the pack. Resume monitoring and play each sample with keyboard output off.
@@ -60,6 +60,7 @@ The bridge does not transcribe, route, mute, replace or upload your audio. Cue s
 This is a working development build, with these boundaries:
 
 - Base and FX 2 cue frequencies have been measured on hardware. The four-bank pack is installed on the development mic; **FX 3/4 analogue playback still needs its physical check**. Generated-cue tests cover all sixteen targets.
+- Voice transcription was reported to stop in FX 3/4 and resume in the base bank. The cause is unconfirmed; use the base bank for voice until the [voice-bank check](docs/VOICE_BANK_CHECK.md) separates hardware behavior from keyboard actions. Cue recognition alone does not establish voice compatibility.
 - Handle keyboard output follows sound activity. A quiet pause can release a key while the handle remains squeezed; it is not a direct hardware-switch sensor.
 - Claude's terminal hold mode relies on key-repeat events. The bridge deliberately sends one keyDown/keyUp for Hold Key; the included Claude profile therefore uses tap mode. Target-app voice and system-hotkey behavior must be tested in the chosen app.
 - Output starts off and disarms on focus, profile, permission or capture changes. Independent held-key leases provide a release timeout. Force-kill/OS failure cannot run normal cleanup.
@@ -70,10 +71,14 @@ This is a working development build, with these boundaries:
 Requires macOS 15+, an installed Swift toolchain, and full Xcode for tests.
 
 ```sh
-./script/build_and_run.sh
+git clone https://github.com/jh3y/fx-relay.git
+cd fx-relay
+./script/build_and_run.sh --build-only
 ```
 
-The app lives in `dist/FX Relay.app`. It runs in the menu bar and intentionally has no Dock icon. Build with `--build-only` to skip opening it. Builds use release optimization and two compiler jobs by default.
+Move `dist/FX Relay.app` into Applications or a folder you own, then open it. It runs in the menu bar and intentionally has no Dock icon. Keep one installed copy and open that same copy consistently. Running the build script without `--build-only` instead opens the development copy in `dist`. Builds use release optimization and two compiler jobs by default.
+
+To stop actions, use **Disable Keyboard Output**. **Pause** stops audio monitoring; **Quit** closes the app and releases its held keys. To uninstall, quit and move the app to the Trash. Preferences and mic backups remain available; there is no login helper or background service to remove. Uninstalling the Mac app does not restore the mic's hardware configuration. See [removal details](docs/MANAGED_MACS.md#stopping-and-removing-the-app).
 
 ```sh
 swift test --jobs 2 --configuration release

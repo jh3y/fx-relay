@@ -30,9 +30,17 @@ Device management can restrict microphone access and control Accessibility/event
 
 For an IT review: the bundle identifier is `com.jhey.fxmicbridge` (retained from the original name). FX Relay measures audio locally, has no transcription or networking client, does not change the system input device, and starts with keyboard output off. Profiles can send configured keys, shortcuts and text to the focused target after explicit arming. No root helper, background system daemon or system extension is required by the implementation.
 
+## Stopping and removing the app
+
+Use **Disable Keyboard Output** to disarm actions while retaining the signal monitor. **Pause** stops capture and releases held keys. **Quit** closes the process and releases held keys; closing a settings window is not quitting the menu-bar utility.
+
+To remove FX Relay, quit it and move its `.app` to the Trash. This build has no login helper, launch agent, system daemon or installer package to uninstall. You can remove its Microphone and Accessibility approvals in System Settings. Saved profiles/preferences and any mic backups remain outside the bundle; exported JSON profiles are ordinary files wherever you saved them.
+
+Mic backups are stored at `~/Library/Application Support/FX-MIC Bridge/Mic Backups/` (the original project name). Keep them if you may want to recover the mic's previous setup. Deleting the Mac app does not undo configuration already written onto the mic. Restore that separately using the matching backup; do not delete backups as part of a routine app uninstall.
+
 ## A future terminal-only mode
 
-A true headless mode is feasible: it could load the same JSON profiles, select an input device, print detection logs, require explicit arming and release keys on exit. It would reuse the audio analyzer, detectors and action dispatcher, with separate permission and lifecycle testing.
+A true headless mode is feasible: it could load the same JSON profiles, select an input device, print detection logs and require explicit arming. It should run in the foreground by default: Ctrl+C or a normal termination signal must stop capture and release held keys. Removing a standalone executable would uninstall it, with optional separate removal of saved settings. No hidden autostart service is needed. If a background service is added later, explicit stop and uninstall commands must be provided with it. The CLI would reuse the audio analyzer, detectors and action dispatcher, with separate permission and lifecycle testing.
 
 **That mode is not implemented in v0.5.0.** Launching the raw executable or using `swift run` is not a documented substitute for the bundle and its permission metadata/resources. A CLI would improve scripting and deployment convenience, not remove microphone, keyboard or company approval requirements.
 
