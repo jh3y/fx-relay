@@ -11,9 +11,11 @@
 <text x="64" y="548" font-size="12" letter-spacing="1.5">FOUR BANKS / SIXTEEN MAPPINGS / YOUR WORKFLOW</text>
 <text x="1216" y="548" text-anchor="end" font-size="12" letter-spacing="1.5">AUDIO → ACTION</text>
 </g>
-<g transform="translate(760 52) scale(.48)"><g fill="#292d2d"><rect x="314" y="186" width="324" height="416" rx="116"/>
-<rect x="426" y="528" width="100" height="310" rx="34"/><rect x="558" y="608" width="64" height="174" rx="24"/></g>
-<g fill="#ece9df"><rect x="376" y="292" width="200" height="22" rx="11"/><rect x="376" y="352" width="200" height="22" rx="11"/><rect x="376" y="412" width="200" height="22" rx="11"/><rect x="376" y="472" width="200" height="22" rx="11"/></g>
-<circle cx="744" cy="614" r="72" fill="#f24b1a"/>
-<g><circle cx="305" cy="881" r="7" fill="#f24b1a"/><circle cx="351" cy="881" r="7" fill="#b6b6ad"/><circle cx="397" cy="881" r="7" fill="#b6b6ad"/><circle cx="443" cy="881" r="7" fill="#b6b6ad"/></g></g>
+<g transform="translate(789 96) scale(.40)"><rect width="1024" height="1024" rx="200" fill="#1f2121"/><g fill="#f0ede0"><rect x="272" y="206" width="324" height="404" rx="112"/>
+<rect x="382" y="510" width="104" height="310" rx="34"/></g>
+<rect x="522" y="622" width="64" height="156" rx="24" fill="#f74f1c"/>
+<g fill="#1f2121"><rect x="334" y="290" width="200" height="22" rx="11"/><rect x="334" y="354" width="200" height="22" rx="11"/><rect x="334" y="418" width="200" height="22" rx="11"/><rect x="334" y="482" width="200" height="22" rx="11"/></g>
+<rect x="636" y="497" width="110" height="20" rx="10" fill="#6b6e69"/>
+<circle cx="752" cy="507" r="58" fill="#f74f1c"/>
+<g><rect x="653" y="752" width="20" height="12" rx="5" fill="#575954"/><rect x="653" y="719" width="20" height="12" rx="5" fill="#575954"/><rect x="653" y="686" width="20" height="12" rx="5" fill="#575954"/><rect x="653" y="653" width="20" height="12" rx="5" fill="#f74f1c"/></g></g>
 </svg>

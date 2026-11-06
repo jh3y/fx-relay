@@ -12,7 +12,10 @@ import AppKit
             NSBezierPath(roundedRect: NSRect(x: 10, y: 2, width: 2.5, height: 4.5), xRadius: 1, yRadius: 1).fill()
             let dot = NSBezierPath(ovalIn: NSRect(x: 16, y: 5.5, width: 5, height: 5))
             if status == "mic" { dot.lineWidth = 1; dot.stroke() }
-            else if status == "mic.slash" || status == "exclamationmark.triangle" {
+            else if status == "exclamationmark.triangle" {
+                let mark = NSBezierPath(); mark.move(to: NSPoint(x: 18.5, y: 12)); mark.line(to: NSPoint(x: 18.5, y: 7)); mark.lineWidth = 1.5; mark.stroke()
+                NSBezierPath(ovalIn: NSRect(x: 17.75, y: 3.5, width: 1.5, height: 1.5)).fill()
+            } else if status == "mic.slash" {
                 let mark = NSBezierPath(); mark.move(to: NSPoint(x: 16, y: 4)); mark.line(to: NSPoint(x: 21, y: 12)); mark.lineWidth = 1.5; mark.stroke()
             } else if status == "bolt.circle.fill" {
                 let square = NSBezierPath(rect: NSRect(x: 16, y: 5.5, width: 5, height: 5)); square.fill()

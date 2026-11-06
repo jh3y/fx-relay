@@ -2,9 +2,11 @@
 
 Use the FX-MIC's analogue output through a Mac audio-input adapter. USB-C is for loading configuration and samples; the bridge observes the selected audio input during normal use. Select the same adapter independently in your terminal or dictation application. The bridge never changes the system input device.
 
+On first launch, **Setup** walks through permissions, input, the cue pack and a profile. Existing users keep their selected input and mappings; reopen Setup from the menu bar when needed. **Ready** requires Microphone and Accessibility access plus actual capture from the selected input. It confirms software readiness; the checks below establish that your physical controls and target app behave as expected.
+
 ## 1. Install the standard four-bank pack
 
-In **Edit Mappings → Mic & Workflows**, choose the mounted normal **FX MIC DISK** drive. Inspection is read-only. The app shows exactly which files it will write. Click **Install Four Banks** to apply the inspected plan.
+In **Setup → Cue pack** (also available in **Mappings → Mic & Workflows**), choose the mounted normal **FX MIC DISK** drive. Inspection is read-only. The app shows exactly which files it will write. Click **Install Four Banks** to apply the inspected plan. Continue without installing if you already use a compatible pack.
 
 The installer supports an unconfigured device with no conflicting filenames, known Agent Cues v1/v2 upgrades, and verification of v3. It refuses unknown configurations, different samples, linked files, boot volumes and changes since inspection. Existing original files are preserved. Replaced files and a receipt are saved under `~/Library/Application Support/FX-MIC Bridge/Mic Backups/`.
 
@@ -22,8 +24,8 @@ Release the handle for this check. Keep Signal Monitor focused, where actions ar
 | --- | --- | --- |
 | No FX / FX 1 | 1500 / 2300 / 3100 / 3900 | Measured |
 | FX 2 | 2751 / 4218 / 5685 / 7153 | Measured |
-| FX 3 | 818 / 1254 / 1690 / 2126 | Predicted; physical check pending |
-| FX 4 | 2915 / 4469 / 6023 / 7578 | Predicted; physical check pending |
+| FX 3 | 818 / 1254 / 1690 / 2126 | Generated-signal tests; user reports successful presses |
+| FX 4 | 2915 / 4469 / 6023 / 7578 | Generated-signal tests; user reports successful presses |
 
 Change FX while the handle is released. The orange and sample-selector buttons do not have independently measured audio events. Only playback identifies the bank and slot. With an older pack, some FX states may play identical base sounds and consequently map to base actions.
 
@@ -32,6 +34,10 @@ Change FX while the handle is released. The orange and sample-selector buttons d
 Choose a starter profile and review its setup notes. To test without submitting a command, map a sample to Type Text `hello` with Enter off. Apply Changes and focus a blank TextEdit document. Output follows the focused app automatically after quiet. A single sample should insert one `hello`.
 
 The menu bar has one **Pause / Resume** control for capture and output together. Switching apps releases held keys and cancels pending text; output resumes in the new app after quiet. Returning to FX Relay suspends actions while you inspect or edit. System shortcuts are explicitly marked in their action editor and still require focus and permissions.
+
+Open **Bank Reference** for a compact view of all sixteen mappings and four handle actions. **Keep on Top** pins that window above other apps; switch back to your target app to use your controls. Highlights identify recent detections, not proof that the target accepted a key. The current bank follows a sample or your explicit menu selection; orange alone cannot update it.
+
+**Launch at Login** is optional and off until you enable it. Enable it from the copy of FX Relay you intend to keep using, in a stable folder. If macOS requires approval, the app links to Login Items settings. Disable it before moving or uninstalling that copy.
 
 Microphone permission allows observation; Accessibility permission permits synthesized keys. Each has an explanation and System Settings button in the app. No recording permission is requested by this setup for a remote service.
 

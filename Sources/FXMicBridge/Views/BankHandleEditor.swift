@@ -26,17 +26,21 @@ struct HandleRoutingView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: compact ? 5 : 10) {
             if compact {
-                Picker("Current bank", selection: Binding(get: { model.handleBank ?? 0 }, set: { model.selectHandleBank($0) })) {
+                Picker("Current bank", selection: Binding(get: { model.handleBank }, set: { model.selectHandleBank($0) })) {
+                    Text("Awaiting a sample…").tag(Int?.none)
                     ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
-                        Text(model.bridgeConfiguration.bankNames[bank]).tag(bank)
+                        Text(model.bridgeConfiguration.bankNames[bank]).tag(Optional(bank))
                     }
                 }.disabled(model.diagnostics.isRecording)
             } else {
                 Text("Bank: " + (model.handleBank.map { model.bridgeConfiguration.bankNames[$0] } ?? "Unknown"))
                     .font(.headline)
             }
-            Text(model.currentHandleAction.map { "Handle: " + $0.label } ?? "Handle: waiting for bank identity")
-                .font(.caption)
+            HStack(spacing: 6) {
+                Image(systemName: "hand.draw").foregroundStyle(model.detectedPTT ? BridgeStyle.orange : Color.secondary)
+                Text(model.currentHandleAction.map { "Handle: " + $0.label } ?? "Handle: waiting for bank identity")
+                if model.actions.pttHeld { Text("HELD").font(.system(size: 9, design: .monospaced)).foregroundStyle(BridgeStyle.orange) }
+            }.font(.caption)
             if !compact {
                 HStack {
                     Label(model.detectedPTT ? "Sound detector: ACTIVE" : "Sound detector: idle", systemImage: model.detectedPTT ? "waveform" : "waveform.slash")
@@ -50,7 +54,7 @@ struct HandleRoutingView: View {
                 Text("Squeeze and begin speaking; don’t wait for the target app’s listening indicator. This detector follows sound, so a silent squeeze may show no change. The signal meter threshold is separate.")
                     .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
-            Text(model.handleBankSource == .startup
+            Text(model.handleBank == nil ? "Play a sample to identify the bank, or select one here." : model.handleBankSource == .startup
                  ? "Startup bank · play a sample after changing FX on the mic"
                  : model.handleBankSource == .manual ? "Selected here · next sample updates the bank" : "Identified by the last sample · orange alone is silent")
                 .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)

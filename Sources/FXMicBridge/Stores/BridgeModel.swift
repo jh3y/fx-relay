@@ -12,6 +12,8 @@ final class BridgeModel {
     let micSetup = MicSetupModel()
     let diagnostics = DiagnosticRecorder()
     let readings = LiveReadings()
+    let utilityPreferences: UtilityPreferences
+    let loginItem = LoginItemManager()
     let profiles: ProfileManager
     private(set) var devices: [AudioInputDevice] = []
     private(set) var settings: MonitorSettings
@@ -49,7 +51,9 @@ final class BridgeModel {
 
     init(defaults: UserDefaults = .standard) {
         store = SettingsStore(defaults: defaults)
-        settings = store.load()
+        let initialSettings = store.load()
+        settings = initialSettings
+        utilityPreferences = UtilityPreferences(defaults: defaults, hasExistingInput: !initialSettings.selectedDeviceUID.isEmpty)
         monitoringEnabled = store.loadMonitoringEnabled()
         profiles = ProfileManager(legacy: store.loadBridge(), defaults: defaults)
         bridgeConfiguration = profiles.selected.configuration
@@ -77,17 +81,20 @@ final class BridgeModel {
     var selectedDevice: AudioInputDevice? { devices.first { $0.id == settings.selectedDeviceUID } }
     var selectedDeviceName: String { selectedDevice?.name ?? settings.selectedDeviceName }
 
+    var readiness: BridgeReadiness {
+        .evaluate(microphone: permissions.microphone == .authorized, accessibility: permissions.accessibility,
+                  inputSelected: !settings.selectedDeviceUID.isEmpty, inputAvailable: selectedDevice != nil,
+                  monitoring: monitoringEnabled, sleeping: sleeping, installing: micSetup.busy,
+                  captureError: errorMessage != nil, starting: isStarting, receivingAudio: isRunning,
+                  diagnostic: diagnostics.isRecording, unsavedMappings: hasUnsavedMappings)
+    }
+
     var status: String {
-        if permissions.microphone != .authorized { return "Microphone permission needed" }
-        if settings.selectedDeviceUID.isEmpty { return "Select an input" }
-        if selectedDevice == nil { return "Selected input disconnected" }
-        if errorMessage != nil { return "Capture error" }
-        if !monitoringEnabled || sleeping { return "Monitoring paused" }
-        if isStarting { return "Connecting…" }
+        if readiness != .ready { return readiness.title }
         if isRunning && detectedTone != nil { return "TONE DETECTED · \(bridgeConfiguration.controlLabel(detectedTone!))" }
         if isRunning && detectedPTT { return actions.pttHeld ? "PTT ACTIVE · key held" : "HANDLE SIGNAL · " + handleStatus }
         if isRunning { return signalPresent ? "Signal present" : "Connected · no signal" }
-        return "Ready"
+        return readiness.title
     }
 
     var statusSymbol: String {
@@ -108,11 +115,12 @@ final class BridgeModel {
         deviceManager.onChange = { [weak self] in self?.devicesChanged($0) }
         deviceManager.onError = { [weak self] in self?.log($0) }
         deviceManager.start()
+        loginItem.refresh()
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification,
             object: nil, queue: .main) { [weak self] _ in MainActor.assumeIsolated { self?.reconcileOutput() } })
         for name in [NSApplication.didBecomeActiveNotification, NSApplication.didResignActiveNotification] {
             observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.refreshPermissions(); self?.reconcileOutput() }
+                MainActor.assumeIsolated { self?.refreshPermissions(); self?.loginItem.refresh(); self?.reconcileOutput() }
             })
         }
         for name in [NSWorkspace.willSleepNotification, NSWorkspace.sessionDidResignActiveNotification] {
@@ -138,7 +146,7 @@ final class BridgeModel {
             MainActor.assumeIsolated { self?.refreshPermissions() }
         }
         permissionTimer?.tolerance = 0.5
-        log("Bridge ready · automatic output to the focused app")
+        log("Bridge started · automatic output when input and permissions are ready")
     }
 
     func chooseDevice(_ uid: String) {

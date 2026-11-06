@@ -9,8 +9,8 @@ import shutil
 ROOT = Path(__file__).resolve().parent.parent
 FILES = ['Package.swift', 'README.md', 'CONTRIBUTING.md', 'THIRD_PARTY_NOTICES.md']
 TREES = ['Sources', 'Tests', 'Resources', 'hardware', 'profiles', '.github', 'licenses']
-DOCS = ['GETTING_STARTED.md', 'PROFILES.md', 'VOICE_OPTIONS.md', 'DEVELOPMENT.md', 'HISTORY.md', 'BRANDING.md', 'MANAGED_MACS.md', 'VOICE_BANK_CHECK.md']
-SCRIPTS = ['check_terminal_output.sh', 'prepare_terminal_check.py', 'terminal_receiver.py', 'build_and_run.sh', 'configure_mic.py', 'switch_bank_probe.py', 'install_four_banks.py',
+DOCS = ['GETTING_STARTED.md', 'PROFILES.md', 'VOICE_OPTIONS.md', 'DEVELOPMENT.md', 'HISTORY.md', 'BRANDING.md', 'MANAGED_MACS.md', 'VOICE_BANK_CHECK.md', 'SIGNING.md']
+SCRIPTS = ['configure_signing.py', 'check_terminal_output.sh', 'prepare_terminal_check.py', 'terminal_receiver.py', 'build_and_run.sh', 'configure_mic.py', 'switch_bank_probe.py', 'install_four_banks.py',
            'generate_icon.swift', 'generate_brand.py', 'render_vectors.swift', 'render_ui.sh', 'render_ui.swift',
            'export_profiles.sh', 'export_profiles.swift', 'export_repository.py', 'summarize_diagnostic.py']
 
@@ -31,10 +31,10 @@ def export(destination):
     for name in TREES: copy(ROOT/name, destination/name)
     for name in DOCS: copy(ROOT/'docs'/name, destination/'docs'/name)
     copy(ROOT/'docs/brand', destination/'docs/brand')
-    for version in ['v0.4.0', 'v0.5.0', 'v0.6.0', 'v0.6.1', 'v0.6.2']:
+    for version in ['v0.4.0', 'v0.5.0', 'v0.6.0', 'v0.6.1', 'v0.6.2', 'v0.7.0']:
         copy(ROOT/'docs/previews'/version, destination/'docs/previews'/version)
     for name in SCRIPTS: copy(ROOT/'script'/name, destination/'script'/name)
-    (destination/'.gitignore').write_text('.build/\n.swiftpm/\ndist/\n.DS_Store\n__pycache__/\n*.pyc\ndiagnostics/\nhardware-backups/\nversions/\n')
+    (destination/'.gitignore').write_text('.build/\n.swiftpm/\n.local/\ndist/\n.DS_Store\n__pycache__/\n*.pyc\ndiagnostics/\nhardware-backups/\nversions/\n')
     manifest = {str(p.relative_to(destination)): hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in sorted(destination.rglob('*')) if p.is_file()}
     # Only generated/public-source content is allowlisted. No local configuration or reports.

@@ -2,7 +2,7 @@
 
 **FX Relay** is the chosen product name: the microphone provides a physical signal, and the utility relays it as a configurable action. It was previously called FX-MIC Bridge. The source repository is [jh3y/fx-relay](https://github.com/jh3y/fx-relay).
 
-The direction is a small instrument panel: warm neutral surfaces, charcoal, a restrained orange accent, monospaced labels, numbered banks and clear physical controls. Light/dark appearance follows macOS. Avoid copying Teenage Engineering's logo or implying official affiliation.
+The direction is a small instrument panel: warm neutral surfaces, charcoal, a restrained orange accent, monospaced labels, numbered banks and clear physical controls. The v0.7 icon uses a graphite tile, cream mic silhouette, orange trigger/output port and four recessed bank indicators. The smallest size omits detail to preserve the silhouette. Light/dark appearance follows macOS. Avoid copying Teenage Engineering's logo or implying official affiliation.
 
 Original assets:
 

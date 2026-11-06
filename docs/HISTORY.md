@@ -17,6 +17,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.6.1 | Optional continuous key holds for terminal voice modes, with marked autorepeat and safe cancellation |
 | 0.6.2 | Automatic output to the focused app, one Pause control, visible startup bank and preserved bank selection during edits |
 | 0.6.3 | Real terminal receipt testing finds dropped marked repeats; targeted ordinary key-down repeats deliver all Spaces |
+| 0.7.0 | Guided setup, honest capture/permission readiness, four-bank reference, Launch at Login, refined branding and stable local signing |
 
 ## The interface, then and now
 
@@ -36,11 +37,17 @@ v0.6.2 removes repeated arming and the countdown. The menu bar has one Current b
 
 ## Findings that shaped the design
 
+v0.7 adds a separate reference window and guided setup. The underlying detector and key-delivery behavior remain those confirmed in v0.6.3.
+
+<img src="previews/v0.7.0/bank-reference-dark.png" alt="v0.7 four-bank reference with per-bank handle mappings, rendered offscreen" width="580">
+
+<img src="previews/v0.7.0/onboarding-access.png" alt="v0.7 guided permission setup, rendered offscreen" width="680">
+
 - Held-silent and released-handle noise floors overlapped, so physical handle position cannot be inferred reliably from silence alone. PTT follows sound activity with confirmation/hysteresis/release delay.
 - Sample cues play with the handle released, allowing macros independently of speech.
 - Orange selects an FX preset. Changing pitch gives sample slots more identities; the selector itself has no usable measured event. The app reports the last played bank, not a silently selected one.
 - Native down/up receipt does not establish a terminal's voice behavior. Claude's repeat-based hold detection now has an explicit compatibility note and a tap-mode starter.
-- Base and FX 2 are measured. FX 3/4 predictions pass generated-signal tests but their analogue confirmation remains a separate physical check.
+- Base and FX 2 are measured. FX 3/4 predictions pass generated-signal tests, and the user reports successful presses across all sixteen slots. Voice behavior in each FX mode remains a separate check.
 
 ## Public source
 

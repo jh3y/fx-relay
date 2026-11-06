@@ -48,7 +48,7 @@ struct ConnectionStatus: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Circle().fill(model.isRunning ? Color.green : Color.orange).frame(width: 7, height: 7)
+            Circle().fill(model.readiness == .ready ? Color.green : Color.orange).frame(width: 7, height: 7)
             Text(model.status).font(.caption).foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)

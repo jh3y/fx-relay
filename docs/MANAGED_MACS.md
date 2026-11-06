@@ -18,7 +18,7 @@ From a source checkout with an approved Swift toolchain, the existing build comm
 
 Neither command requires a system-wide installer. Both start the **menu-bar app**. They do not enable a terminal-only mode or change the permission requirements. Keep the bundle in a stable location so its identity and settings are straightforward to manage.
 
-The current development bundle is ad-hoc signed, not Developer ID signed or notarized. A downloaded copy may therefore be blocked. Apple documents the distinction between developer identity, notarization and administrator-controlled launch settings in [Safely open apps on your Mac](https://support.apple.com/en-us/102445).
+Development bundles use ad-hoc signing unless you configure a [local or existing signing identity](SIGNING.md). Local self-signing is not Developer ID signing or notarization, so a downloaded copy may still be blocked. Apple documents the distinction between developer identity, notarization and administrator-controlled launch settings in [Safely open apps on your Mac](https://support.apple.com/en-us/102445).
 
 ## What permissions remain necessary?
 
@@ -34,7 +34,7 @@ For an IT review: the bundle identifier is `com.jhey.fxmicbridge` (retained from
 
 Use the menu bar’s single **Pause** control to stop capture and release held keys. **Resume** restores automatic output to the focused app. **Quit** closes the process and releases held keys; closing a settings window is not quitting the menu-bar utility.
 
-To remove FX Relay, quit it and move its `.app` to the Trash. This build has no login helper, launch agent, system daemon or installer package to uninstall. You can remove its Microphone and Accessibility approvals in System Settings. Saved profiles/preferences and any mic backups remain outside the bundle; exported JSON profiles are ordinary files wherever you saved them.
+To remove FX Relay, turn off **Launch at Login** if enabled, quit it, and move its `.app` to the Trash. The login option registers the main app with macOS; it does not install a separate helper or daemon. You can also disable it in System Settings → General → Login Items & Extensions. Remove its Microphone and Accessibility approvals in System Settings if desired. Saved profiles/preferences and any mic backups remain outside the bundle; exported JSON profiles are ordinary files wherever you saved them.
 
 Mic backups are stored at `~/Library/Application Support/FX-MIC Bridge/Mic Backups/` (the original project name). Keep them if you may want to recover the mic's previous setup. Deleting the Mac app does not undo configuration already written onto the mic. Restore that separately using the matching backup; do not delete backups as part of a routine app uninstall.
 

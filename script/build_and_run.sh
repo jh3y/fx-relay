@@ -17,6 +17,24 @@ if ! [[ "$BUILD_JOBS" =~ ^[1-9][0-9]*$ ]]; then
   exit 2
 fi
 cd "$ROOT_DIR"
+SIGNING_IDENTITY="${FXMIC_SIGNING_IDENTITY:-}"
+if [[ -z "$SIGNING_IDENTITY" && -f "$ROOT_DIR/.local/signing-identity.txt" ]]; then
+  SIGNING_IDENTITY="$(cat "$ROOT_DIR/.local/signing-identity.txt")"
+  if ! [[ "$SIGNING_IDENTITY" =~ ^[A-Fa-f0-9]{40}$ ]]; then
+    echo "Invalid local signing identity; run script/configure_signing.py before rebuilding." >&2
+    exit 2
+  fi
+fi
+SIGNING_IDENTITY="${SIGNING_IDENTITY:--}"
+if [[ "$SIGNING_IDENTITY" != "-" ]]; then
+  VALID_IDENTITIES="$(/usr/bin/security find-identity -v -p codesigning)"
+  if ! /usr/bin/grep -Fq -- "$SIGNING_IDENTITY" <<<"$VALID_IDENTITIES"; then
+    echo "Configured signing identity is unavailable. The running app was not replaced." >&2
+    exit 1
+  fi
+else
+  echo "Ad-hoc signing: macOS may ask for permissions again after rebuilding. See docs/SIGNING.md."
+fi
 # Keep Xcode's test toolchain and the Command Line Tools from reusing incompatible modules.
 TOOLCHAIN_ID="$(xcrun swift --version | shasum -a 256 | cut -c 1-12)"
 SCRATCH_PATH="$ROOT_DIR/.build/app-$TOOLCHAIN_ID"
@@ -60,7 +78,7 @@ mkdir -p "$APP_BUNDLE/Contents/Resources/CuePacks"
 for version in 1 2 3; do
   /usr/bin/ditto "$ROOT_DIR/hardware/agent-cues-v$version" "$APP_BUNDLE/Contents/Resources/CuePacks/agent-cues-v$version"
 done
-/usr/bin/codesign --force --sign "${FXMIC_SIGNING_IDENTITY:--}" --options runtime \
+/usr/bin/codesign --force --sign "$SIGNING_IDENTITY" --options runtime \
   --identifier "$BUNDLE_ID" --entitlements "$ROOT_DIR/Resources/FXMicBridge.entitlements" "$APP_BUNDLE"
 /usr/bin/codesign --verify --strict "$APP_BUNDLE"
 

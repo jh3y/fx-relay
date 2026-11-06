@@ -14,19 +14,25 @@ func render(_ size: Int, name: String) throws {
     func rounded(_ rect: CGRect, _ radius: CGFloat, _ fill: CGColor) {
         c.setFillColor(fill); c.addPath(CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)); c.fillPath()
     }
-    let ink = color(0.14, 0.15, 0.15), paper = color(0.91, 0.90, 0.86), orange = color(0.94, 0.29, 0.10)
+    let ink = color(0.12, 0.13, 0.13), paper = color(0.94, 0.93, 0.88), orange = color(0.97, 0.31, 0.11)
     c.saveGState(); c.setShadow(offset: CGSize(width: 0, height: -8), blur: 25, color: CGColor(gray: 0, alpha: 0.18))
-    rounded(CGRect(x: 58, y: 58, width: 908, height: 908), 196, paper); c.restoreGState()
-    c.setStrokeColor(CGColor(gray: 1, alpha: 0.5)); c.setLineWidth(3)
+    rounded(CGRect(x: 58, y: 58, width: 908, height: 908), 196, ink); c.restoreGState()
+    c.setStrokeColor(CGColor(gray: 1, alpha: 0.18)); c.setLineWidth(3)
     c.addPath(CGPath(roundedRect: CGRect(x: 60, y: 60, width: 904, height: 904), cornerWidth: 194, cornerHeight: 194, transform: nil)); c.strokePath()
-    rounded(CGRect(x: 314, y: 422, width: 324, height: 416), 116, ink)
-    rounded(CGRect(x: 426, y: 186, width: 100, height: 310), 34, ink)
-    rounded(CGRect(x: 558, y: 242, width: 64, height: 174), 24, ink)
-    for y in [530, 590, 650, 710] { rounded(CGRect(x: 376, y: y, width: 200, height: 22), 11, paper) }
-    c.setFillColor(orange); c.fillEllipse(in: CGRect(x: 672, y: 338, width: 144, height: 144))
+    // One strong silhouette stays legible at 16 px. Details only enter at 32 px.
+    rounded(CGRect(x: 272, y: 414, width: 324, height: 404), 112, paper)
+    rounded(CGRect(x: 382, y: 204, width: 104, height: 310), 34, paper)
+    rounded(CGRect(x: 522, y: 246, width: 64, height: 156), 24, orange)
+    if size >= 32 {
+        for y in [520, 584, 648, 712] { rounded(CGRect(x: 334, y: y, width: 200, height: 22), 11, ink) }
+        rounded(CGRect(x: 636, y: 507, width: 110, height: 20), 10, color(0.42, 0.43, 0.41))
+    }
+    c.setFillColor(orange); c.fillEllipse(in: CGRect(x: 694, y: 459, width: 116, height: 116))
+    // Four recessed bank indicators form the quiet instrument detail.
+    if size >= 64 {
     for i in 0..<4 {
-        c.setFillColor(i == 0 ? orange : color(0.67, 0.67, 0.64))
-        c.fillEllipse(in: CGRect(x: 298 + i * 46, y: 136, width: 14, height: 14))
+        rounded(CGRect(x: 653, y: 260 + i * 33, width: 20, height: 12), 5, i == 3 ? orange : color(0.34, 0.35, 0.33))
+    }
     }
     let image = c.makeImage()!
     let destination = CGImageDestinationCreateWithURL(output.appendingPathComponent(name) as CFURL, UTType.png.identifier as CFString, 1, nil)
@@ -38,4 +44,4 @@ for size in [16, 32, 128, 256, 512] {
     try render(size, name: "icon_\(size)x\(size).png")
     try render(size * 2, name: "icon_\(size)x\(size)@2x.png")
 }
-print("Rendered original FX-MIC icon: \(output.path)")
+print("Rendered FX Relay icon: \(output.path)")

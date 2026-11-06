@@ -68,7 +68,7 @@ struct MappingWindowView: View {
             Divider()
             HStack(spacing: 12) {
                 Circle().fill(dirty ? BridgeStyle.orange : Color.secondary.opacity(0.45)).frame(width: 6, height: 6)
-                Text(dirty ? "Unsaved changes · apply to resume" : "Saved locally · ready in your app").font(.caption).foregroundStyle(.secondary)
+                Text(dirty ? "Unsaved changes · apply to resume" : "Saved locally · \(model.readiness.title)").font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("Revert") { draft = model.bridgeConfiguration }.disabled(!dirty)
                 Button("Apply Changes") { model.applyBridgeConfiguration(draft) }
@@ -109,11 +109,13 @@ struct MappingWindowView: View {
             navigation("Detection", icon: "slider.horizontal.3", page: -2)
             navigation("Mic & Workflows", icon: "wrench.and.screwdriver", page: -3)
             Spacer(minLength: 24)
+            Button("Bank Reference") { openWindow(id: "cheat-sheet") }.buttonStyle(.link)
+            Button("Setup…") { openWindow(id: "setup") }.buttonStyle(.link)
             Button("Signal Monitor") { openWindow(id: "signal-monitor") }.buttonStyle(.link)
             Text("FX → BANK\nSAMPLE → SLOT\nPLAY → ACTION")
                 .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("FX RELAY / 0.6").font(.system(size: 9, design: .monospaced)).tracking(1.2).foregroundStyle(.tertiary)
+            Text("FX RELAY / 0.7").font(.system(size: 9, design: .monospaced)).tracking(1.2).foregroundStyle(.tertiary)
         }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
     }
     private func navigation(_ title: String, icon: String, page value: Int) -> some View {

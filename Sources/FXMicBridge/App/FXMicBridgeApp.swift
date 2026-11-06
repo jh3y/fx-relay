@@ -23,6 +23,21 @@ struct FXMicBridgeApp: App {
         .defaultSize(width: 1020, height: 740)
         .windowResizability(.contentMinSize)
         .defaultLaunchBehavior(.suppressed)
+
+        Window("FX Relay — Setup", id: "setup") {
+            SetupWindowView(model: model)
+        }
+        .defaultSize(width: 680, height: 670)
+        .windowResizability(.contentMinSize)
+        .restorationBehavior(.disabled)
+        .defaultLaunchBehavior(model.utilityPreferences.introductionDismissed ? .suppressed : .presented)
+
+        Window("FX Relay — Bank Reference", id: "cheat-sheet") {
+            BankReferenceView(model: model)
+        }
+        .windowResizability(.contentSize)
+        .windowLevel(model.utilityPreferences.keepCheatSheetOnTop ? .floating : .normal)
+        .defaultLaunchBehavior(.suppressed)
     }
 
     private var monitorWindow: some Scene {
@@ -49,6 +64,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         configureTerminationSignals()
         if TerminalDeliveryCheck.runIfRequested() { return }
         BridgeModel.shared.start()
+        if !BridgeModel.shared.utilityPreferences.introductionDismissed {
+            NSApp.activate(ignoringOtherApps: true)
+        }
         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { event in
             guard event.keyCode == 49,
                   event.cgEvent?.getIntegerValueField(.eventSourceUserData) == ActionDispatcher.testMarker else { return event }

@@ -22,12 +22,15 @@ struct BridgeBrand: View {
     var compact = false
     var body: some View {
         HStack(spacing: 10) {
-            ZStack(alignment: .bottomTrailing) {
-                BridgeMark().fill(.primary).frame(width: compact ? 28 : 36, height: compact ? 28 : 36)
-                Circle().fill(BridgeStyle.orange).frame(width: 8, height: 8)
+            ZStack {
+                RoundedRectangle(cornerRadius: compact ? 8 : 10).fill(Color(red: 0.12, green: 0.13, blue: 0.13))
+                BridgeMark().fill(Color(red: 0.94, green: 0.93, blue: 0.88))
+                    .frame(width: compact ? 27 : 34, height: compact ? 27 : 34).offset(x: -3)
+                Circle().fill(BridgeStyle.orange).frame(width: compact ? 5 : 6, height: compact ? 5 : 6).offset(x: compact ? 10 : 12, y: 2)
             }
+            .frame(width: compact ? 36 : 44, height: compact ? 36 : 44)
             VStack(alignment: .leading, spacing: 3) {
-                Text("FX RELAY").font(.system(size: compact ? 12 : 15, weight: .semibold, design: .monospaced)).tracking(1)
+                Text("FX RELAY").font(.system(size: compact ? 13 : 16, weight: .semibold, design: .monospaced)).tracking(1)
                 BridgeStyle.label("AUDIO / ACTION")
             }
         }

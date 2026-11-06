@@ -8,7 +8,7 @@ swift test --jobs 2 --configuration release
 python3 -m unittest discover -s Tests/DeviceSetupTests -v
 ```
 
-The build creates a proper `.app` bundle, includes AppIcon.icns and all cue-pack versions needed for validation/upgrades, ad-hoc signs it with audio-input entitlement, and verifies the signature. It gracefully stops an existing copy before replacing the bundle. At most two compiler jobs run by default. `--debug` uses an unoptimized build; normal use is optimized. `FXMIC_SIGNING_IDENTITY` can supply a development identity.
+The build creates a proper `.app` bundle, includes AppIcon.icns and all cue-pack versions needed for validation/upgrades, signs it with the audio-input entitlement, and verifies the signature. It gracefully stops an existing copy before replacing the bundle. At most two compiler jobs run by default. `--debug` uses an unoptimized build; normal use is optimized. Configure a stable identity with the [signing setup](SIGNING.md); otherwise the build uses ad-hoc signing.
 
 ## Architecture
 
@@ -22,6 +22,8 @@ The build creates a proper `.app` bundle, includes AppIcon.icns and all cue-pack
 | ProfileStore / ProfileManager | Validated local JSON, starters, migration and editable mappings |
 | CuePackInstaller / MicSetupModel | Native inspection, backup, install and restore of the standard pack |
 | LiveReadings | Throttled UI snapshots only for visible windows/popovers |
+| BridgeReadiness / UtilityPreferences | Permission/capture readiness, first-run migration and reference-window preference |
+| LoginItemManager | Explicit main-app login registration through ServiceManagement; actual OS status is the source of truth |
 
 FFT refresh is capped at 10 Hz, visible readings at 15 Hz, and diagnostic measurements at 5 Hz. Controls run at 25 Hz independently of visibility. Tone probes are cached and skipped below the level floor. No speech model, networking client or shell action is included.
 
@@ -31,7 +33,7 @@ FFT refresh is capped at 10 Hz, visible readings at 15 Hz, and diagnostic measur
 xcrun swift script/generate_icon.swift
 iconutil -c icns Resources/AppIcon.iconset -o Resources/AppIcon.icns
 python3 script/generate_brand.py
-./script/render_ui.sh
+./script/render_ui.sh docs/previews/v0.7.0
 ```
 
 The render helper compiles the actual SwiftUI screens with optimized core artifacts and an isolated preference suite. It never starts audio or posts keys. Its light/dark PNGs and width/height assertions are layout checks; they do not replace live interaction checks. The helper currently targets Apple Silicon. Build the core with the full Xcode toolchain before using it.
@@ -54,4 +56,4 @@ Automatic output has no arming countdown. ForegroundOutputGate rejects queued pr
 
 With iTerm2 installed, run `./script/check_terminal_output.sh`. This stops the development bridge, builds it, and opens a uniquely named receiver window. Leave that window focused for about five seconds. It counts Space bytes without saving other typed text, compares legacy marked repeats with current process-targeted repeats, saves private reports under `diagnostics/`, and reopens the bridge normally. It does not use your agent session or capture audio. Focus/permission loss stops the check, and the held-key lease releases independently.
 
-Development builds use ad-hoc signatures unless `FXMIC_SIGNING_IDENTITY` is configured. Rebuilding changes their code identity, so macOS may require Accessibility access to be granted again (toggle FX Relay off/on in System Settings) and microphone access to be renewed from the app. Confirm that capture has actually started before evaluating a hardware test. That is an OS permission check, not the removed output-arming step. A stable signing identity is needed for a smoother development/distribution experience; the build does not modify TCC or weaken the signing requirement.
+Development builds without a configured certificate use ad-hoc signatures. Rebuilding those may require Accessibility approval again (toggle FX Relay off/on in System Settings) and microphone access to be renewed from the app. Use [local development signing](SIGNING.md) to keep subsequent builds certificate-bound. Confirm capture has actually started before evaluating hardware: v0.7’s Ready status requires both permissions and incoming audio buffers. It does not claim a physical control was verified. The build does not modify TCC or weaken the signing requirement.
