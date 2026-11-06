@@ -61,9 +61,17 @@ The orange button selects an FX preset. The sample selector chooses one of four 
 
 The bridge does not transcribe, route, mute, replace or upload your audio. Cue sounds remain in the signal heard by your other apps.
 
+## Running in the background
+
+FX Relay is designed to stay in the menu bar. Closing its windows leaves capture and control detection running; **Pause** stops both, and **Quit** exits. It runs no speech model. Chart updates are limited to visible surfaces, while signal analysis continues in the background.
+
+A 30.24-second observation of **v0.7.0 on an Apple M2 Max** averaged **5.85% of one CPU core** and **108.5 MiB resident memory** (also the sampled peak). CPU was calculated from the process’s accumulated CPU time divided by elapsed time; memory is RSS. This was an existing user session, with speech and window visibility uncontrolled, not an idle, battery-life or long-duration benchmark. Other devices and an open Signal Monitor can change the cost. These measurements support modest overhead in that session, not a guarantee of trouble-free operation on every Mac.
+
 ## Current status
 
 This is a working development build, with these boundaries:
+
+- The user reports successful everyday use in both Codex and Claude with v0.7.0. That is useful workflow evidence, alongside the automated checks, rather than a compatibility claim for every terminal or voice configuration.
 
 - Base and FX 2 cue frequencies have been measured on hardware. The user reports successful presses across all sixteen slots, including a custom `/voice` action in bank 4. Generated-cue tests cover all sixteen targets; this does not establish voice compatibility in every FX mode.
 - Voice transcription was reported to stop in FX 3/4 and resume in the base bank. The cause is unconfirmed; use the base bank for voice until the [voice-bank check](docs/VOICE_BANK_CHECK.md) separates hardware behavior from keyboard actions. Cue recognition alone does not establish voice compatibility.

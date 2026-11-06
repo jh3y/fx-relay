@@ -5,6 +5,7 @@ The bridge is a controller. Any transcription, model, account, privacy policy or
 | Option | Why try it | Bridge setup |
 | --- | --- | --- |
 | Apple Dictation | Built into macOS; a straightforward first experiment across editable text fields | Included profile; match a custom system shortcut |
+| Hex | Local dictation with configurable shortcuts and speech models; macOS, Windows and Linux | Candidate integration: use a sample-triggered system shortcut in Tap mode; not yet verified with FX Relay |
 | Codex voice | Fits sessions already using Codex's voice conversation | Included CLI starter; F8 or editable commands |
 | Claude Code voice | Coding vocabulary and dictation inside the terminal | Included Tap starter; review its submission behavior |
 | MacWhisper | Local-model transcription plus system-wide dictation and optional text processing | Dictation Shortcut template; match its configured hotkey |
@@ -20,3 +21,13 @@ Superwhisper documents offline operation, custom vocabulary, modes and automatic
 Wispr Flow markets text cleanup across apps. Treat it as a separate service with its own connection, privacy and plan requirements; check those before adopting it. [Wispr Flow](https://wisprflow.ai/).
 
 These are feature comparisons, not measured accuracy or latency rankings. None has been benchmarked with this mic in the current build. Compare a short representative sentence, time from finishing speech to inserted text, and whether the app keeps focus and receives the bridge's synthetic shortcut. Cue sounds also reach the dictation app because the bridge does not filter the mic signal.
+
+## Apple Dictation or Hex?
+
+**Apple Dictation is the easiest baseline.** It is already in macOS and supports a custom start/stop shortcut and a selected microphone. To try the included profile, enable Dictation in System Settings → Keyboard, choose the FX-MIC audio adapter, set its shortcut to **Control–Option–D**, then select the Apple Dictation profile in FX Relay. Test sample 1 in an empty text document before an agent prompt. Keyboard settings explain whether the selected language/configuration uses on-device processing or needs a connection. [Apple’s guide](https://support.apple.com/en-gb/guide/mac-help/mh40584/26/mac/26).
+
+**Hex is a promising next comparison for a uniform workflow across apps.** Its standard dictation flow downloads a speech model, recognises speech locally, and pastes at the current focus. The repository is MIT licensed; the macOS download targets Apple silicon and macOS 15+. It remains a separate app with its own model, memory and transcription workload. [Hex](https://anoma.ly/hex/) · [Repository](https://github.com/anomalyco/hex).
+
+The reviewed development source supports Hold, Tap and double-tap variants, custom shortcuts and local model selection. Features on the development branch may differ from a stable download. Our first integration experiment would use **Tap**, an ordinary modifier-plus-key shortcut, and FX Relay’s **Shortcut → macOS system shortcut** delivery on a sample. That avoids relying on the default modifier-only Option hold. This is a proposed test, not verified compatibility; the existing process-targeted continuous Space action is for terminal PTT. [Shortcut modes](https://github.com/anomalyco/hex/blob/159129ed2991fd7fc9b6799528dfd4463177cd0b/src/rune_ui/shortcut_mode.rs) · [Dictation behavior](https://github.com/anomalyco/hex/blob/159129ed2991fd7fc9b6799528dfd4463177cd0b/docs/features/dictation.md).
+
+There is no measured accuracy or latency winner here. Compare the same short passages containing filenames, commands and punctuation in both apps. Measure the delay from the last word until usable text appears, count corrections, and check insertion into the actual terminal. Neither option is necessary if your existing agent voice mode already meets your needs. No dictation app was installed during this comparison.

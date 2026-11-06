@@ -16,3 +16,5 @@ Original assets:
 The original name shortlist also included Cuegrip and CUE/16. FX Relay was chosen for clarity.
 
 Optional Krea brief: “A small native macOS utility for a handheld microphone used as a programmable controller. Warm off-white, charcoal and one orange accent. Geometric mic/handle and a single physical button. Precise monospaced typography, four understated bank indicators. Simple enough to work at 16 pixels. Original identity; no manufacturer logos, gradients of rainbow color, robot mascots or waveform-heavy AI branding.”
+
+Krea is optional concept exploration; the shipping icon remains editable vector/code artwork. Useful variations would explore (1) a mic and relay contact, (2) a compact four-bank instrument panel, and (3) a minimal handle/trigger silhouette. Keep the same restricted palette, ask for flat front views on plain backgrounds, and compare the silhouettes at small sizes before choosing details. Translate the selected direction into native icon assets rather than using a screenshot of a mockup.
