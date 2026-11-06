@@ -6,7 +6,7 @@ import Observation
 final class ProfileManager {
     private(set) var library: ProfileLibrary
     var error: String?
-    var onWillChange: (() -> Void)?
+    var onWillChange: ((BridgeProfile) -> Void)?
     var onChange: (() -> Void)?
     private let store: ProfileStore
     var selected: BridgeProfile { library.selected }
@@ -75,7 +75,7 @@ final class ProfileManager {
     private func commit(_ next: ProfileLibrary) {
         do {
             try store.save(next)
-            onWillChange?()
+            onWillChange?(next.selected)
             library = next; error = nil; onChange?()
         } catch { self.error = error.localizedDescription }
     }

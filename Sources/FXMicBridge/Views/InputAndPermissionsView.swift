@@ -34,7 +34,7 @@ struct PermissionNotice: View {
                 }
             }
             if !model.permissions.accessibility {
-                Label("Accessibility access is needed for the Space test.", systemImage: "keyboard")
+                Label("Allow Accessibility to send your mapped keys and shortcuts.", systemImage: "keyboard")
                     .font(.callout)
                 Button("Open Accessibility Settings") { model.permissions.requestAccessibility() }
             }

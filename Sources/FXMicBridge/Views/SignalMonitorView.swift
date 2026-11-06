@@ -22,8 +22,6 @@ struct SignalMonitorView: View {
                 HStack {
                     InputPicker(model: model)
                     Button("Refresh", systemImage: "arrow.clockwise", action: model.refreshDevices).labelStyle(.iconOnly)
-                    Button(model.isRunning || model.isStarting ? "Pause Monitoring" : "Resume Monitoring", action: model.toggleMonitoring)
-                        .disabled(model.selectedDevice == nil || model.permissions.microphone != .authorized)
                 }
                 ConnectionStatus(model: model)
                 PermissionNotice(model: model)
@@ -44,7 +42,7 @@ struct SignalMonitorView: View {
                 }
                 Divider()
                 EventLogView(model: model)
-                Text("Keyboard output starts off. The bridge observes audio; your target app still receives the original microphone signal, including cue tones. No speech recognition or audio routing.")
+                Text("Output follows your focused app automatically. Pause or resume from the menu bar. The bridge observes audio; your target app still receives the original microphone signal, including cue tones. No speech recognition or audio routing.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             .padding(24)

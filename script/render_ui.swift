@@ -12,7 +12,7 @@ import SwiftUI
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let model = BridgeModel(defaults: defaults)
-        let output = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "docs/previews/v0.6.1")
+        let output = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "docs/previews/v0.6.2")
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         func render(_ name: String, page: Int, slot: Int = 0, surface: String = "mappings", width: CGFloat, height: CGFloat, dark: Bool = false) throws {
             app.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)

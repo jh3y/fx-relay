@@ -34,7 +34,7 @@ struct ActionEditor: View {
                         Text("macOS / system shortcut").tag(BridgeAction.Delivery.systemShortcut)
                     }
                     if action.delivery == .systemShortcut {
-                        Text("For shortcuts handled by macOS, such as Dictation. Set the same combination in System Settings. Output still requires an armed, focused target.")
+                        Text("For shortcuts handled by macOS, such as Dictation. Set the same combination in System Settings. Output follows the focused app; Pause stops all actions.")
                             .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 }

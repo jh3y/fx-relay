@@ -9,6 +9,11 @@ enum TestDestination: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+struct KeyboardTarget: Equatable {
+    let processIdentifier: pid_t
+    let localizedName: String?
+}
+
 @MainActor @Observable
 final class ActionDispatcher {
     nonisolated static let testMarker: Int64 = 0x46584D4943
@@ -20,60 +25,71 @@ final class ActionDispatcher {
     private var task: Task<Void, Never>?
     private var generation = UUID()
     private(set) var isArmed = false
-    private(set) var isArming = false
-    private(set) var bridgeStatus = "Preview · keyboard output off"
+    private(set) var bridgeStatus = "Connecting microphone…"
     private(set) var pttHeld = false
-    private var target: NSRunningApplication?
-    private var armTask: Task<Void, Never>?
-    private var armGeneration = UUID()
+    private var target: KeyboardTarget?
+    private var gate = ForegroundOutputGate()
+    private var unavailableReason: String? = "Connecting microphone…"
     private var held: [Int: (lease: HeldKeyLease, chord: KeyChord, token: UUID)] = [:]
-    private var waitingForQuiet = true
-    private var armedAt = Double.infinity
     private let textRunner = TextActionRunner()
     private var lastFrameAt = -Double.infinity
+    private let frontmost: @MainActor () -> KeyboardTarget?
+    private let hasAccessibility: () -> Bool
+    private let utilityFocused: @MainActor () -> Bool
+    private let now: () -> Double
+    private let makeKeySink: (pid_t, KeyChord, Bool) -> KeyEventSink
 
-    func arm() {
-        cancel(reason: "Enabling bridge")
-        disable(reason: "New target")
-        guard AXIsProcessTrusted() else { bridgeStatus = "Accessibility permission needed"; return }
-        isArming = true
-        let token = UUID()
-        armGeneration = token
-        armTask = Task { [weak self] in
-            guard let self else { return }
-            for seconds in (1...3).reversed() {
-                bridgeStatus = "Focus your target app · \(seconds)…"
-                try? await Task.sleep(for: .seconds(1))
-                guard !Task.isCancelled, armGeneration == token else { return }
-            }
-            guard AXIsProcessTrusted(), let app = NSWorkspace.shared.frontmostApplication,
-                  app.processIdentifier != NSRunningApplication.current.processIdentifier, !app.isTerminated else {
-                disable(reason: "Focus a different app before enabling output"); return
-            }
-            target = app
-            armedAt = ProcessInfo.processInfo.systemUptime
-            isArming = false; isArmed = true; waitingForQuiet = true
-            bridgeStatus = "Waiting for silence · \(app.localizedName ?? "target app")"
-            onEvent?("Keyboard output enabled → \(app.localizedName ?? "target app"); waiting for silence")
-        }
+    init(frontmost: @escaping @MainActor () -> KeyboardTarget? = {
+             guard let app = NSWorkspace.shared.frontmostApplication, !app.isTerminated else { return nil }
+             return KeyboardTarget(processIdentifier: app.processIdentifier, localizedName: app.localizedName)
+         },
+         hasAccessibility: @escaping () -> Bool = { AXIsProcessTrusted() },
+         utilityFocused: @escaping @MainActor () -> Bool = {
+             NSApp.isActive || NSWorkspace.shared.frontmostApplication?.processIdentifier == NSRunningApplication.current.processIdentifier
+         },
+         now: @escaping () -> Double = { ProcessInfo.processInfo.systemUptime },
+         makeKeySink: @escaping (pid_t, KeyChord, Bool) -> KeyEventSink = {
+             QuartzChordSink(pid: $0, chord: $1, systemShortcut: $2)
+         }) {
+        self.frontmost = frontmost; self.hasAccessibility = hasAccessibility
+        self.utilityFocused = utilityFocused; self.now = now; self.makeKeySink = makeKeySink
+    }
+
+    /// Availability belongs to the app lifecycle, not a user-operated arm switch.
+    func setAvailability(blockedBy reason: String?) {
+        unavailableReason = reason
+        checkFocus()
     }
 
     func checkFocus() {
-        guard isArmed else { return }
-        if target?.isTerminated != false || target?.processIdentifier != NSWorkspace.shared.frontmostApplication?.processIdentifier {
-            disable(reason: "Target app lost focus")
+        var reason = unavailableReason
+        if reason == nil && !hasAccessibility() { reason = "Accessibility permission needed" }
+        if reason == nil && isBusy { reason = "Manual keyboard test running" }
+        let focused = frontmost()
+        if reason == nil && utilityFocused() { reason = "Ready · switch to your app" }
+        let next = reason == nil ? focused : nil
+        if gate.update(targetPID: next?.processIdentifier, at: now()) {
+            textRunner.cancel()
+            for id in Array(held.keys) { release(id: id, reason: "Focused app changed or output suspended") }
+            target = next
+            if let next { onEvent?("Output ready → \(next.localizedName ?? "focused app"); waiting for quiet") }
         }
+        if isArmed != (next != nil) { isArmed = next != nil }
+        let nextStatus = reason ?? (next == nil ? "Ready · switch to your app" :
+            "\(gate.waitingForQuiet ? "Waiting for quiet" : "Ready") · \(next?.localizedName ?? "focused app")")
+        if bridgeStatus != nextStatus { bridgeStatus = nextStatus }
     }
 
+    /// Interrupt the current gesture. Fresh frames may resume automatically once
+    /// availability and focus permit; an interrupted gesture is never replayed.
     func disable(reason: String) {
-        let wasEnabled = isArmed || isArming
-        armGeneration = UUID(); armTask?.cancel(); armTask = nil
+        let wasEnabled = isArmed
         textRunner.cancel()
-        isArmed = false; isArming = false; target = nil; waitingForQuiet = true
         for id in Array(held.keys) { release(id: id, reason: reason) }
-        pttHeld = false
-        bridgeStatus = wasEnabled ? "Output off · \(reason)" : "Preview · keyboard output off"
-        if wasEnabled { onEvent?("Keyboard output disabled · \(reason)") }
+        gate.reset()
+        isArmed = false; target = nil; pttHeld = false
+        bridgeStatus = reason
+        if wasEnabled { onEvent?("Output suspended · \(reason)") }
     }
 
     func process(_ frame: ControlFrame, configuration: BridgeConfiguration, handle: BankHandleRouter.Decision) {
@@ -83,12 +99,14 @@ final class ActionDispatcher {
             for id in Array(held.keys) { release(id: id, reason: "Bank changed") }
         }
         guard isArmed else { return }
-        guard frame.time >= armedAt else { return }
         checkFocus()
         guard isArmed else { return }
-        guard AXIsProcessTrusted(), ProcessInfo.processInfo.systemUptime - frame.time < 0.25 else {
+        guard hasAccessibility(), now() - frame.time < 0.25 else {
             disable(reason: "Permission missing or stale audio"); return
         }
+        let quiet = !frame.pttActive && frame.rmsDB < configuration.releaseDB &&
+            frame.tone.candidate == nil && frame.tone.heldControl == nil && frame.tone.detected == nil
+        guard gate.accepts(frameTime: frame.time, now: now(), quiet: quiet) else { return }
         lastFrameAt = frame.time
         // End a sample hold before renewing/repeating it on this frame.
         for id in Array(held.keys) where id > 0 && frame.tone.heldControl != id - 1 {
@@ -98,29 +116,22 @@ final class ActionDispatcher {
             if !value.lease.renew(duration: 0.6) { disable(reason: "Key safety timeout"); return }
             value.lease.repeatIfDue()
         }
-        if waitingForQuiet {
-            if !frame.pttActive && frame.tone.candidate == nil && frame.tone.heldControl == nil {
-                waitingForQuiet = false
-                bridgeStatus = "Keyboard output → \(target?.localizedName ?? "target app")"
-            }
-            return
-        }
         if let action = handle.activation { activate(action, id: 0) }
         if !frame.pttActive { release(id: 0, reason: "PTT ended") }
         if let slot = frame.tone.detected { activate(configuration.action(for: slot), id: slot + 1) }
     }
 
     private func activate(_ action: BridgeAction, id: Int) {
-        guard action.kind != .none, let target, !target.isTerminated else { return }
+        guard action.kind != .none, let target, frontmost()?.processIdentifier == target.processIdentifier else { return }
         guard !textRunner.isBusy else { onEvent?("Control \(id) skipped · text action still running"); return }
         if action.kind == .typeText {
             guard held.isEmpty else { onEvent?("Control \(id) skipped · release held keys before typing text"); return }
             let pid = target.processIdentifier
             let started = textRunner.start(action, sink: QuartzTextSink(pid: pid), isAllowed: { [weak self] in
                 guard let self else { return false }
-                return self.isArmed && self.target?.processIdentifier == pid && self.target?.isTerminated == false &&
-                    NSWorkspace.shared.frontmostApplication?.processIdentifier == pid && AXIsProcessTrusted() &&
-                    ProcessInfo.processInfo.systemUptime - self.lastFrameAt < 0.25
+                return self.isArmed && !self.utilityFocused() && self.target?.processIdentifier == pid &&
+                    self.frontmost()?.processIdentifier == pid && self.hasAccessibility() &&
+                    self.now() - self.lastFrameAt < 0.25
             }, finished: { [weak self] success in
                 self?.onEvent?("Control \(id) text action \(success ? "posted" : "stopped before completion")")
                 if !success { self?.disable(reason: "Text action interrupted") }
@@ -133,8 +144,8 @@ final class ActionDispatcher {
         guard !held.values.contains(where: { $0.chord.keyCode == action.chord.keyCode }) else {
             onEvent?("Control \(id) skipped · key already held"); return
         }
-        let sink = QuartzChordSink(pid: target.processIdentifier, chord: action.chord,
-                                   systemShortcut: action.kind == .shortcut && action.delivery == .systemShortcut)
+        let sink = makeKeySink(target.processIdentifier, action.chord,
+                               action.kind == .shortcut && action.delivery == .systemShortcut)
         if action.isHold {
             let lease = HeldKeyLease(), token = UUID()
             guard lease.hold(sink, duration: 0.6, continuous: action.kind == .holdKeyContinuous, onRelease: { [weak self] in

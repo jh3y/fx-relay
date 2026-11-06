@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     let model: BridgeModel
-    @State private var referenceBank = 0
+    private var referenceBank: Int { model.handleBank ?? 0 }
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
@@ -17,14 +17,7 @@ struct MenuBarView: View {
             ProfilePicker(model: model)
             HandleRoutingView(model: model, compact: true)
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    BridgeStyle.label("MAPPING REFERENCE")
-                    Spacer()
-                    Picker("Bank to display", selection: $referenceBank) {
-                        ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in Text("\(bank + 1)").tag(bank) }
-                    }.pickerStyle(.segmented).labelsHidden().frame(width: 140)
-                }
-                Text(model.bridgeConfiguration.bankNames[referenceBank]).font(.callout.weight(.medium))
+                BridgeStyle.label("SAMPLE ACTIONS")
                 ForEach(0..<4) { slot in
                     let index = referenceBank * 4 + slot
                     HStack {
@@ -37,12 +30,12 @@ struct MenuBarView: View {
             }
             Text(model.lastRecognizedControl.map { "Last played: " + model.bridgeConfiguration.controlLabel($0) } ?? "Play a sample to identify its bank and slot.")
                 .font(.caption2).foregroundStyle(.secondary)
-            Text(model.actions.bridgeStatus).font(.caption).foregroundStyle(.secondary)
-            if model.actions.isArmed || model.actions.isArming {
-                Button("Disable Keyboard Output") { model.actions.disable(reason: "Disabled by user") }
-            } else {
-                Button("Enable Output in 3 Seconds", action: model.enableKeyboardOutput)
-                    .disabled(!model.isRunning || !model.permissions.accessibility || model.diagnostics.isRecording || model.hasUnsavedMappings)
+            HStack {
+                Label(model.actions.bridgeStatus, systemImage: model.monitoringEnabled ? "bolt.circle" : "pause.circle")
+                    .font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button(model.monitoringEnabled ? "Pause" : "Resume", action: model.toggleMonitoring)
+                    .disabled(model.micSetup.busy)
             }
             if let error = model.errorMessage {
                 Text(error).font(.caption).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
@@ -57,10 +50,8 @@ struct MenuBarView: View {
             }
             Divider()
             HStack {
-                Button(model.isRunning || model.isStarting ? "Pause" : "Resume", action: model.toggleMonitoring)
-                    .disabled(model.selectedDevice == nil || model.permissions.microphone != .authorized)
-                Spacer()
                 Button("About") { NSApp.orderFrontStandardAboutPanel(nil); NSApp.activate(ignoringOtherApps: true) }
+                Spacer()
                 Button("Quit") { NSApp.terminate(nil) }.keyboardShortcut("q")
             }
             .buttonStyle(.plain).font(.caption)
@@ -71,9 +62,6 @@ struct MenuBarView: View {
             model.readings.setVisible(.menu, source: source, visible: visible)
         }))
         .onAppear { model.refreshPermissions() }
-        .onChange(of: model.lastRecognizedControl) { _, control in
-            if let control { referenceBank = control / 4 }
-        }
         .tint(BridgeStyle.orange)
     }
 }

@@ -9,6 +9,20 @@ final class BankHandleTests: XCTestCase {
     }
     private var mixed: BridgeConfiguration { ProfileTemplate.bankWorkflows.makeProfile().configuration }
 
+    func testExplicitStartupBankWorksImmediatelyAfterQuietAndNextCueOverridesIt() {
+        var router = BankHandleRouter(startupBank: 0)
+        XCTAssertEqual(router.bank, 0); XCTAssertEqual(router.source, .startup)
+        XCTAssertNil(router.process(frame(true, transition: true), configuration: mixed).activation)
+        _ = router.process(frame(), configuration: mixed)
+        XCTAssertEqual(router.process(frame(true, transition: true), configuration: mixed).activation?.kind, .holdKeyContinuous)
+        let cue = router.process(frame(cue: 7), configuration: mixed)
+        XCTAssertTrue(cue.release); XCTAssertEqual(router.bank, 1); XCTAssertEqual(router.source, .cue)
+        router.reset(preservingBank: true)
+        XCTAssertEqual(router.bank, 1)
+        router.reset()
+        XCTAssertEqual(router.bank, 0); XCTAssertEqual(router.source, .startup)
+    }
+
     func testDifferentMappingsDoNotGuessBankAtStartup() {
         var router = BankHandleRouter()
         _ = router.process(frame(), configuration: mixed)
@@ -65,6 +79,32 @@ final class BankHandleTests: XCTestCase {
         _ = router.process(frame(), configuration: config)
         XCTAssertEqual(router.process(frame(true, transition: true), configuration: config).activation, config.handleAction)
         XCTAssertNil(router.bank)
+    }
+
+    func testMappingResetKeepsKnownCueBankButRequiresQuietBeforeNewAction() {
+        var router = BankHandleRouter()
+        _ = router.process(frame(cue: 3), configuration: mixed)
+        _ = router.process(frame(), configuration: mixed)
+        XCTAssertNotNil(router.process(frame(true, transition: true), configuration: mixed).activation)
+        router.reset(preservingBank: true)
+        XCTAssertEqual(router.bank, 0); XCTAssertEqual(router.source, .cue)
+        var edited = mixed; edited.handleActions[0] = .init(.holdKey, .init(48, label: "Tab"))
+        let stillSpeaking = router.process(frame(true, transition: true), configuration: edited)
+        XCTAssertTrue(stillSpeaking.release); XCTAssertNil(stillSpeaking.activation)
+        XCTAssertEqual(stillSpeaking.state, .waitingForQuiet)
+        _ = router.process(frame(), configuration: edited)
+        XCTAssertEqual(router.process(frame(true, transition: true), configuration: edited).activation?.chord.keyCode, 48)
+    }
+
+    func testMappingResetKeepsManualBankButOrdinaryResetForgetsIt() {
+        var router = BankHandleRouter(); router.select(1)
+        router.reset(preservingBank: true)
+        XCTAssertEqual(router.bank, 1); XCTAssertEqual(router.source, .manual)
+        _ = router.process(frame(cue: 3), configuration: mixed)
+        XCTAssertEqual(router.bank, 0); XCTAssertEqual(router.source, .cue)
+        router.reset()
+        XCTAssertNil(router.bank); XCTAssertNil(router.source)
+        XCTAssertEqual(router.process(frame(), configuration: mixed).state, .unknownBank)
     }
     func testMappingChangeAndManualSwitchRequireReleaseAndFreshSpeech() {
         var router = BankHandleRouter(); router.select(0)

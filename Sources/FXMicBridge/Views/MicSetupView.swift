@@ -46,7 +46,7 @@ struct MicSetupView: View {
                 }
             }
             if let error = setup.error { Text(error).foregroundStyle(.red).font(.callout).fixedSize(horizontal: false, vertical: true) }
-            Text("After ejecting, resume monitoring and check each bank in Signal Monitor with output off. A custom or unexpected pack is left for you to review. Firmware is managed separately.")
+            Text("After ejecting, resume from the menu bar and check each bank with Signal Monitor focused. A custom or unexpected pack is left for you to review. Firmware is managed separately.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }.padding(20).background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
     }

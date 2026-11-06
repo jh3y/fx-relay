@@ -15,6 +15,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.5.0 | Renamed FX Relay; starter profiles, native four-bank setup, custom menu-bar identity, UI polish and repository preparation |
 | 0.6.0 | Per-bank handle actions, Agent Banks starter, independent sound detection and clearer routing/keyboard diagnostics |
 | 0.6.1 | Optional continuous key holds for terminal voice modes, with marked autorepeat and safe cancellation |
+| 0.6.2 | Automatic output to the focused app, one Pause control, visible startup bank and preserved bank selection during edits |
 
 ## The interface, then and now
 
@@ -27,6 +28,10 @@ Both images are offscreen renders of their actual SwiftUI views, not live microp
 v0.6.0 adds a Handle tab within each bank, so one profile can use different handle actions across workflows.
 
 <img src="previews/v0.6.0/bank-handle.png" alt="v0.6.0 per-bank handle editor, rendered offscreen" width="100%">
+
+v0.6.2 removes repeated arming and the countdown. The menu bar has one Current bank selector and one Pause/Resume control. Signal Monitor observes without a separate output setup.
+
+<img src="previews/v0.6.2/menu.png" alt="v0.6.2 menu bar with automatic output and a single Pause control, rendered offscreen" width="380">
 
 ## Findings that shaped the design
 

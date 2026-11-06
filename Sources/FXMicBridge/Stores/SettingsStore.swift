@@ -24,6 +24,13 @@ final class SettingsStore {
         if let data = try? JSONEncoder().encode(settings) { defaults.set(data, forKey: key) }
     }
 
+    func loadMonitoringEnabled() -> Bool {
+        (defaults.object(forKey: "bridge.monitoringEnabled.v1") as? Bool) ?? true
+    }
+    func saveMonitoringEnabled(_ enabled: Bool) {
+        defaults.set(enabled, forKey: "bridge.monitoringEnabled.v1")
+    }
+
     func loadBridge() -> BridgeConfiguration {
         guard let data = defaults.data(forKey: "bridge.configuration.v2"),
               let value = try? JSONDecoder().decode(BridgeConfiguration.self, from: data) else { return .init() }

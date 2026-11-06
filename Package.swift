@@ -8,6 +8,7 @@ let package = Package(
     targets: [
         .target(name: "FXMicCore"),
         .executableTarget(name: "FXMicBridge", dependencies: ["FXMicCore"]),
-        .testTarget(name: "FXMicCoreTests", dependencies: ["FXMicCore"])
+        .testTarget(name: "FXMicCoreTests", dependencies: ["FXMicCore"]),
+        .testTarget(name: "FXMicBridgeTests", dependencies: ["FXMicBridge"])
     ]
 )

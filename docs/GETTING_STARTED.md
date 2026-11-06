@@ -14,9 +14,9 @@ All four banks come with the pack. Fresh profiles enable all banks. Upgrades kee
 
 Use a firmware version that supports the documented JSON format. Development testing used firmware 1.1.2 after encountering the older JSON parsing issue; the app does not update firmware. Refer to the [manufacturer's EP-2350 guide](https://teenage.engineering/guides/ep-2350).
 
-## 2. Check playback with output off
+## 2. Check playback in Signal Monitor
 
-Release the handle for this check. In Signal Monitor, Reset Check. For each bank, select slots 1–4 and press PLAY once, waiting two seconds between plays. Confirm the corresponding counter increments once and the sample does not activate PTT. Save Bridge Check if anything differs.
+Release the handle for this check. Keep Signal Monitor focused, where actions are automatically suspended, and click Clear Check. For each bank, select slots 1–4 and press PLAY once, waiting two seconds between plays. Confirm the corresponding counter increments once and the sample does not activate PTT. Save Bridge Check if anything differs.
 
 | FX selection | Samples 1–4, Hz | Evidence |
 | --- | --- | --- |
@@ -29,9 +29,9 @@ Change FX while the handle is released. The orange and sample-selector buttons d
 
 ## 3. Test keys, then your workflow
 
-Choose a starter profile and review its setup notes. To test without submitting a command, map a sample to Type Text `hello` with Enter off. Apply Changes, click **Enable Output in 3 Seconds**, and focus a blank TextEdit document during the countdown. A single sample should insert one `hello`.
+Choose a starter profile and review its setup notes. To test without submitting a command, map a sample to Type Text `hello` with Enter off. Apply Changes and focus a blank TextEdit document. Output follows the focused app automatically after quiet. A single sample should insert one `hello`.
 
-Output is tied to the focused target process; switching apps disarms it. Returning to mappings also disables output. Never use an untested mapping in an important document. System shortcuts are explicitly marked in their action editor and still require arming/focus/permissions.
+The menu bar has one **Pause / Resume** control for capture and output together. Switching apps releases held keys and cancels pending text; output resumes in the new app after quiet. Returning to FX Relay suspends actions while you inspect or edit. System shortcuts are explicitly marked in their action editor and still require focus and permissions.
 
 Microphone permission allows observation; Accessibility permission permits synthesized keys. Each has an explanation and System Settings button in the app. No recording permission is requested by this setup for a remote service.
 
@@ -39,10 +39,10 @@ Microphone permission allows observation; Accessibility permission permits synth
 
 ## 4. Check handle detection separately
 
-1. Open Signal Monitor with keyboard output off. Choose the desired **Handle bank** manually, or identify it by playing a sample.
+1. Open Signal Monitor. The default startup bank is **Base / FX 1**. If the mic is in another bank, play a sample to identify it, or choose **Current bank** in the menu bar.
 2. Wait quietly, then squeeze and **speak for a few seconds**. Confirm the input meter rises and **Sound detector: ACTIVE** appears. A silent squeeze is not a reliable test; the mic has no digital handle-switch event.
 3. Stop speaking and release. The detector should return to idle after the configured release delay, initially 900 ms. Use **Edit Mappings → Detection** for PTT activation/confirmation/release settings; the monitor's signal threshold only controls signal start/end logging.
-4. Review the bank's **Handle** mapping. For a keyboard check, use Hold Space and arm output into a disposable TextEdit document during the countdown. Speaking should post a Space down, followed by an up after silence. The event log records dispatch; the separate **Manual test DOWN/UP** counters are only for the manual TEST SPACE button.
-5. Switching focus back to the bridge disarms output. Use **Save Bridge Check** to export detector traces, bank identity, mapping and event logs if the result differs.
+4. Review the bank's **Handle** mapping. For a keyboard check, use Hold Space and focus a disposable TextEdit document. Speaking should post a Space down, followed by an up after silence. The event log records dispatch; the separate **Manual test DOWN/UP** counters are only for the manual TEST SPACE button.
+5. Switching focus back to the bridge temporarily suspends actions. Returning to your app resumes them automatically after quiet. Use **Save Bridge Check** to export detector traces, bank identity, mapping and event logs if the result differs.
 
 Receiving a Space event does not establish voice compatibility in a terminal. Claude's terminal hold mode uses key repeats, while generic Hold Key sends one down/up pair. For `/voice hold`, select **Hold Key — Continuous** in the bank's Handle action. The Claude Code · Tap starter is the separate toggle workflow. Sound-based activation can miss the beginning of speech and release during pauses; it does not establish true physical push-to-talk.

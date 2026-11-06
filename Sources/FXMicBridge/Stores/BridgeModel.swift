@@ -17,14 +17,14 @@ final class BridgeModel {
     private(set) var settings: MonitorSettings
     private(set) var bridgeConfiguration: BridgeConfiguration
     private(set) var detectedPTT = false
-    @ObservationIgnored private var handleRouter = BankHandleRouter()
-    private(set) var handleBank: Int?
-    private(set) var handleBankSource: BankHandleRouter.Source?
+    @ObservationIgnored private var handleRouter = BankHandleRouter(startupBank: 0)
+    private(set) var handleBank: Int? = 0
+    private(set) var handleBankSource: BankHandleRouter.Source? = .startup
     private(set) var handleRouteState = BankHandleRouter.State.waitingForQuiet
     private(set) var detectedTone: Int?
     private(set) var toneCounts = [Int](repeating: 0, count: BridgeConfiguration.controlCount)
     private(set) var lastRecognizedControl: Int?
-    var hasUnsavedMappings = false
+    var hasUnsavedMappings = false { didSet { reconcileOutput() } }
     private var lastToneTime = -Double.infinity
     @ObservationIgnored private var checkFrames: [BridgeCheckFrame] = []
     @ObservationIgnored private var controlTrace = ControlTraceRecorder()
@@ -50,19 +50,26 @@ final class BridgeModel {
     init(defaults: UserDefaults = .standard) {
         store = SettingsStore(defaults: defaults)
         settings = store.load()
+        monitoringEnabled = store.loadMonitoringEnabled()
         profiles = ProfileManager(legacy: store.loadBridge(), defaults: defaults)
         bridgeConfiguration = profiles.selected.configuration
         micSetup.onWillInstall = { [weak self] in
             self?.monitoringEnabled = false
             self?.stopCapture(reason: "Installing mic cue pack")
         }
-        profiles.onWillChange = { [weak self] in self?.stopCapture(reason: "Profile or mappings changed") }
+        profiles.onWillChange = { [weak self] next in
+            guard let self else { return }
+            // Bank identity belongs to the cue layout. Editing keyboard actions
+            // does not move the physical selector; a different cue layout invalidates it.
+            let sameCues = self.bridgeConfiguration.tones.map(\.frequency) == next.configuration.tones.map(\.frequency)
+            self.stopCapture(reason: "Profile or mappings changed", preservingHandleBank: sameCues)
+        }
         profiles.onChange = { [weak self] in
             guard let self else { return }
             self.bridgeConfiguration = self.profiles.selected.configuration
             self.hasUnsavedMappings = false
             self.lastRecognizedControl = nil; self.toneCounts = [Int](repeating: 0, count: BridgeConfiguration.controlCount)
-            self.log("Profile saved/selected · \(self.profiles.selected.name) · keyboard output off")
+            self.log("Profile saved/selected · \(self.profiles.selected.name)")
             self.reconcileCapture()
         }
     }
@@ -102,11 +109,12 @@ final class BridgeModel {
         deviceManager.onError = { [weak self] in self?.log($0) }
         deviceManager.start()
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification,
-            object: nil, queue: .main) { [weak self] _ in MainActor.assumeIsolated { self?.actions.checkFocus() } })
-        observers.append(NotificationCenter.default.addObserver(forName: NSApplication.didBecomeActiveNotification,
-            object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.refreshPermissions() }
+            object: nil, queue: .main) { [weak self] _ in MainActor.assumeIsolated { self?.reconcileOutput() } })
+        for name in [NSApplication.didBecomeActiveNotification, NSApplication.didResignActiveNotification] {
+            observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.refreshPermissions(); self?.reconcileOutput() }
             })
+        }
         for name in [NSWorkspace.willSleepNotification, NSWorkspace.sessionDidResignActiveNotification] {
             observers.append(NSWorkspace.shared.notificationCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated {
@@ -130,7 +138,7 @@ final class BridgeModel {
             MainActor.assumeIsolated { self?.refreshPermissions() }
         }
         permissionTimer?.tolerance = 0.5
-        log("Bridge ready · preview mode; keyboard output off")
+        log("Bridge ready · automatic output to the focused app")
     }
 
     func chooseDevice(_ uid: String) {
@@ -168,14 +176,14 @@ final class BridgeModel {
         case .unassigned: return "No keyboard action in this bank"
         case .waitingForQuiet: return "Waiting for quiet before the next handle action"
         case .ready: return "Ready · speak while holding the handle"
-        case .active: return actions.pttHeld ? "Key held · \(currentHandleAction?.label ?? "")" : "Signal active · \(actions.isArmed ? "see event log" : "preview only")"
+        case .active: return actions.pttHeld ? "Key held · \(currentHandleAction?.label ?? "")" : "Signal active · \(actions.isArmed ? "see event log" : "output suspended")"
         }
     }
     func selectHandleBank(_ bank: Int?) {
         actions.disable(reason: "Handle bank selected manually")
         handleRouter.select(bank)
         refreshHandleRouting()
-        log(handleBank.map { "Handle bank selected manually · " + bridgeConfiguration.bankNames[$0] + "; output off" } ?? "Handle bank cleared; awaiting a sample")
+        log(handleBank.map { "Handle bank selected manually · " + bridgeConfiguration.bankNames[$0] } ?? "Handle bank cleared; awaiting a sample")
     }
     private func refreshHandleRouting() {
         if handleBank != handleRouter.bank { handleBank = handleRouter.bank }
@@ -183,9 +191,17 @@ final class BridgeModel {
         if handleRouteState != handleRouter.state { handleRouteState = handleRouter.state }
     }
 
-    func enableKeyboardOutput() {
-        guard isRunning, permissions.accessibility, !diagnostics.isRecording, !hasUnsavedMappings, !micSetup.busy else { return }
-        actions.arm()
+    private func reconcileOutput() {
+        let reason: String?
+        if !monitoringEnabled { reason = "Paused" }
+        else if sleeping { reason = "Mac sleeping or session locked" }
+        else if !permissions.accessibility { reason = "Accessibility permission needed" }
+        else if !isRunning { reason = errorMessage ?? "Waiting for microphone" }
+        else if diagnostics.isRecording { reason = "Guided check · observing only" }
+        else if hasUnsavedMappings { reason = "Apply or revert your mapping changes" }
+        else if micSetup.busy { reason = "Installing mic cue pack" }
+        else { reason = nil }
+        actions.setAvailability(blockedBy: reason)
     }
 
     func exportBridgeCheck() {
@@ -227,11 +243,9 @@ final class BridgeModel {
     }
 
     func resetBridgeCheck() {
-        actions.disable(reason: "New preview check")
         checkFrames.removeAll(); toneCounts = [Int](repeating: 0, count: BridgeConfiguration.controlCount); events.removeAll(); lastRecognizedControl = nil
-        handleRouter.reset(); refreshHandleRouting()
         beginControlTrace(reason: "Reset Check")
-        log("Preview check started · PTT \(detectedPTT ? "active" : "inactive") · keyboard output off")
+        log("Check cleared · PTT \(detectedPTT ? "active" : "inactive") · \(actions.bridgeStatus)")
     }
 
     private func controlCheckpoint(at uptime: Double) -> ControlStateCheckpoint {
@@ -246,18 +260,20 @@ final class BridgeModel {
 
     func toggleMonitoring() {
         guard !micSetup.busy else { return }
-        if monitoringEnabled && (isRunning || isStarting) {
+        if monitoringEnabled {
             monitoringEnabled = false
-            stopCapture(reason: "Monitoring paused")
+            store.saveMonitoringEnabled(false)
+            stopCapture(reason: "Paused", preservingHandleBank: true)
         } else {
             monitoringEnabled = true
+            store.saveMonitoringEnabled(true)
             errorMessage = nil
             reconcileCapture()
         }
     }
 
     func requestMicrophone() {
-        permissions.requestMicrophone { [weak self] in self?.reconcileCapture() }
+        permissions.requestMicrophone { [weak self] in self?.reconcileCapture(); self?.reconcileOutput() }
     }
 
     func refreshDevices() { deviceManager.refresh() }
@@ -275,6 +291,7 @@ final class BridgeModel {
             if permissions.microphone != .authorized { stopCapture(reason: "Microphone permission unavailable") }
             else { reconcileCapture() }
         }
+        reconcileOutput()
     }
 
     func receiveTestEvent(isDown: Bool) {
@@ -305,7 +322,6 @@ final class BridgeModel {
 
     func monitorClosed() {
         actions.cancel(reason: "Signal Monitor closed")
-        actions.disable(reason: "Signal Monitor closed")
         diagnostics.finish(reason: "Signal Monitor closed; partial report")
     }
 
@@ -372,6 +388,9 @@ final class BridgeModel {
                     if let down = frame.pttTransition {
                         self.log("\(down ? "PTT DOWN" : "PTT UP") detected\(self.actions.isArmed ? "" : " · preview")",
                             analysisUptime: frame.pttEvaluation?.blockEndUptime)
+                        if down && handle.activation == nil {
+                            self.log("Handle action not sent · \(self.handleStatus)", analysisUptime: frame.time)
+                        }
                     }
                     if let slot = frame.tone.detected {
                         self.toneCounts[slot] += 1; self.detectedTone = slot; self.lastRecognizedControl = slot; self.lastToneTime = frame.time
@@ -380,6 +399,7 @@ final class BridgeModel {
                             frame.tone.confidence * 100, self.actions.isArmed ? "" : " · preview"), analysisUptime: frame.time)
                     }
                     if self.detectedTone != nil, frame.time - self.lastToneTime > 0.6 { self.detectedTone = nil }
+                    self.reconcileOutput()
                     self.actions.process(frame, configuration: self.bridgeConfiguration, handle: handle)
                 }
             },
@@ -423,7 +443,7 @@ final class BridgeModel {
             })
     }
 
-    private func stopCapture(reason: String) {
+    private func stopCapture(reason: String, preservingHandleBank: Bool = false) {
         generation = UUID()
         controlTrace.stop(at: ProcessInfo.processInfo.systemUptime, reason: reason)
         actions.cancel(reason: reason)
@@ -436,8 +456,9 @@ final class BridgeModel {
         isStarting = false
         signalPresent = false
         detectedPTT = false; detectedTone = nil
-        handleRouter.reset(); refreshHandleRouting()
+        handleRouter.reset(preservingBank: preservingHandleBank); refreshHandleRouting()
         readings.reset()
+        reconcileOutput()
     }
 }
 

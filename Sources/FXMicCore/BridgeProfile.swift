@@ -29,7 +29,7 @@ public enum ProfileError: LocalizedError {
 }
 
 /// JSON is configuration only. Imported profiles are validated and added as a copy;
-/// no file can arm output, choose a target process, or execute a program.
+/// no file can resume a paused bridge, choose a target process, or execute a program.
 public enum ProfileCodec {
     private struct Document: Codable { var schemaVersion = 4; var profile: BridgeProfile }
     public static func validate(_ profile: BridgeProfile) throws {

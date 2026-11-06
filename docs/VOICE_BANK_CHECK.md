@@ -16,10 +16,10 @@ Use the base bank for voice until this check is complete. Continue treating FX 3
 
 If the failure remains while FX Relay is quit, its synthesized keys cannot be causing that run. Next compare the selected input in an ordinary local audio recorder or input monitor to distinguish missing/altered microphone audio from a target-app recognition problem. A level meter alone cannot prove speech is intelligible. No audio needs to be uploaded, and FX Relay does not transcribe it.
 
-If the failure disappears, reopen FX Relay with keyboard output disabled and repeat the same sequence. Then inspect the selected profile and event log before enabling any actions. An old Hold-Space profile, an Escape/Return mapping or a played command can affect a voice session even though the bridge does not modify its microphone stream.
+If the failure disappears, reopen FX Relay with a Blank profile (all actions None), then repeat the same sequence. Then inspect the selected profile and event log before restoring your normal profile. An old Hold-Space profile, an Escape/Return mapping or a played command can affect a voice session even though the bridge does not modify its microphone stream.
 
 ## Then: verify the loaded hardware pack
 
-Expose the normal **FX MIC DISK**, inspect its `config.json` and four cue-file hashes against the shipped v3 pack, and eject it to reload. Do not use firmware-update mode. Verify each bank's sample pitches separately with output off; do not mix the speech check with sample playback.
+Expose the normal **FX MIC DISK**, inspect its `config.json` and four cue-file hashes against the shipped v3 pack, and eject it to reload. Do not use firmware-update mode. Verify each bank's sample pitches separately with Signal Monitor focused (actions are suspended there); do not mix the speech check with sample playback.
 
 Record the app and version, input adapter, starting FX lights, whether PLAY was used, whether voice mode stayed active, and which steps worked. This distinguishes device configuration, audio quality, cue playback and keyboard output without guessing which caused the symptom.

@@ -68,7 +68,7 @@ struct MappingWindowView: View {
             Divider()
             HStack(spacing: 12) {
                 Circle().fill(dirty ? BridgeStyle.orange : Color.secondary.opacity(0.45)).frame(width: 6, height: 6)
-                Text(dirty ? "Unsaved changes · output off" : "Saved locally").font(.caption).foregroundStyle(.secondary)
+                Text(dirty ? "Unsaved changes · apply to resume" : "Saved locally · ready in your app").font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("Revert") { draft = model.bridgeConfiguration }.disabled(!dirty)
                 Button("Apply Changes") { model.applyBridgeConfiguration(draft) }
@@ -82,11 +82,9 @@ struct MappingWindowView: View {
         .onChange(of: model.bridgeConfiguration) { _, value in draft = value }
         .onChange(of: draft) { _, value in
             model.hasUnsavedMappings = value != model.bridgeConfiguration
-            if model.hasUnsavedMappings { model.actions.disable(reason: "Editing mappings") }
         }
         .background(WindowVisibilityObserver(onChange: { _, _ in }, onClose: {
             draft = model.bridgeConfiguration; model.hasUnsavedMappings = false
-            model.actions.disable(reason: "Mappings closed")
         }))
     }
 

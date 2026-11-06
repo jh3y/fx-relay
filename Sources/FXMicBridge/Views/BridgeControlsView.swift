@@ -31,23 +31,9 @@ struct BridgeControlsView: View {
             Text(model.lastRecognizedControl.map { "Last played: " + model.bridgeConfiguration.controlLabel($0) } ?? "Play a sample to identify its bank and slot.")
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
-                Button("Reset Check", action: model.resetBridgeCheck).disabled(model.diagnostics.isRecording)
+                Button("Clear Check", action: model.resetBridgeCheck).disabled(model.diagnostics.isRecording)
                 Button("Save Bridge Check", action: model.exportBridgeCheck)
-                Spacer()
-                OutputButton(model: model)
             }
-        }
-    }
-}
-
-struct OutputButton: View {
-    let model: BridgeModel
-    var body: some View {
-        if model.actions.isArmed || model.actions.isArming {
-            Button("Disable Output") { model.actions.disable(reason: "Disabled by user") }.tint(BridgeStyle.orange)
-        } else {
-            Button("Enable Output in 3 Seconds", action: model.enableKeyboardOutput)
-                .disabled(!model.isRunning || !model.permissions.accessibility || model.diagnostics.isRecording || model.hasUnsavedMappings)
         }
     }
 }

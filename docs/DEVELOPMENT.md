@@ -17,8 +17,8 @@ The build creates a proper `.app` bundle, includes AppIcon.icns and all cue-pack
 | AudioDeviceManager / AudioCaptureEngine | Enumerate inputs and capture the chosen device without changing system audio |
 | SignalAnalyzer / AudioSampleProcessor | PCM, RMS/peak, waveform and spectrum off the main thread |
 | ControlAnalyzer / PTTDetector / ToneDetector | Fixed analysis blocks, sound gating and conservative cue recognition |
-| BankHandleRouter | Last-cue/manual bank identity, per-bank handle routing, quiet-before-rearm and release decisions |
-| ActionDispatcher / HeldKeyLease / TextActionRunner | Focused output, balanced events, timeout release and cancellable typing |
+| BankHandleRouter | Explicit startup/last-cue/manual bank identity, per-bank handle routing, quiet-before-rearm and release decisions |
+| ForegroundOutputGate / ActionDispatcher / HeldKeyLease / TextActionRunner | Focused output, balanced events, timeout release and cancellable typing |
 | ProfileStore / ProfileManager | Validated local JSON, starters, migration and editable mappings |
 | CuePackInstaller / MicSetupModel | Native inspection, backup, install and restore of the standard pack |
 | LiveReadings | Throttled UI snapshots only for visible windows/popovers |
@@ -47,3 +47,5 @@ The product name became **FX Relay** in v0.5.0. The executable/module (`FXMicBri
 Profile JSON schema 4 adds an explicit continuous-hold action to the four per-bank handle mappings. Legacy handle settings are retained for decoding and migrate to the same effective action in each bank. ProfileStore writes a new v5 preference key without changing older library bytes. PTTDetector always observes sound; BankHandleRouter and ActionDispatcher separately decide mapping and keyboard output. Bridge Check schema 4 includes handle bank, identification source and routing state.
 
 Continuous holds use autorepeat-marked Quartz keyDown events. ActionDispatcher requests repeats only after focus/permission/fresh-frame checks; HeldKeyLease serializes them with release, limits their cadence and never generates repeats independently. Normal Hold Key is unchanged. QuartzChordSink supports an injected event receiver for validating native event fields without sending keys.
+
+Automatic output has no arming countdown. ForegroundOutputGate rejects queued pre-focus and stale frames, requires quiet after each target change, and requests release before a new target is accepted. App-level tests inject focus, permission and key sinks to verify automatic resume, balanced holds and continuous repeats without posting real keys. Microphone, permission, editing, diagnostic and pause states suspend output centrally. Explicit Pause is stored separately from profiles. Closing the monitor or applying mappings does not require re-enabling output.

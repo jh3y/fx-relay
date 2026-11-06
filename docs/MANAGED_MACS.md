@@ -28,11 +28,11 @@ The current development bundle is ad-hoc signed, not Developer ID signed or nota
 
 Device management can restrict microphone access and control Accessibility/event-posting permissions. A CLI executable remains subject to these controls; it does not inherit unlimited permissions from a terminal. See Apple's [Privacy Preferences Policy Control settings](https://support.apple.com/guide/deployment/privacy-preferences-policy-control-payload-dep38df53c2a/web). An IT team can decide whether this tool and its permissions are allowed. Developer ID signing and notarization would make distribution and identification more consistent, but do not override organizational policy.
 
-For an IT review: the bundle identifier is `com.jhey.fxmicbridge` (retained from the original name). FX Relay measures audio locally, has no transcription or networking client, does not change the system input device, and starts with keyboard output off. Profiles can send configured keys, shortcuts and text to the focused target after explicit arming. No root helper, background system daemon or system extension is required by the implementation.
+For an IT review: the bundle identifier is `com.jhey.fxmicbridge` (retained from the original name). FX Relay measures audio locally, has no transcription or networking client, does not change the system input device, and is ready for keyboard output once input and permissions are available. Profiles send configured keys, shortcuts and text to the focused app. Actions suspend while FX Relay has focus, permissions/input are unavailable, or edits are unapplied. Pause stops capture/output and persists across launches. No root helper, background system daemon or system extension is required by the implementation.
 
 ## Stopping and removing the app
 
-Use **Disable Keyboard Output** to disarm actions while retaining the signal monitor. **Pause** stops capture and releases held keys. **Quit** closes the process and releases held keys; closing a settings window is not quitting the menu-bar utility.
+Use the menu bar’s single **Pause** control to stop capture and release held keys. **Resume** restores automatic output to the focused app. **Quit** closes the process and releases held keys; closing a settings window is not quitting the menu-bar utility.
 
 To remove FX Relay, quit it and move its `.app` to the Trash. This build has no login helper, launch agent, system daemon or installer package to uninstall. You can remove its Microphone and Accessibility approvals in System Settings. Saved profiles/preferences and any mic backups remain outside the bundle; exported JSON profiles are ordinary files wherever you saved them.
 

@@ -2,7 +2,7 @@ import Foundation
 
 /// Routes already-detected sound transitions; it never infers a silent orange-button press.
 public struct BankHandleRouter: Sendable {
-    public enum Source: String, Codable, Sendable { case cue, manual }
+    public enum Source: String, Codable, Sendable { case cue, manual, startup }
     public enum State: String, Codable, Sendable { case unknownBank, unassigned, waitingForQuiet, ready, active }
     public struct Decision: Equatable, Sendable {
         public let release: Bool
@@ -17,9 +17,18 @@ public struct BankHandleRouter: Sendable {
     private var previousAction: BridgeAction?
     private var active = false
     private var pendingRelease = false
+    private let startupBank: Int?
 
-    public init() {}
-    public mutating func reset() { self = Self() }
+    public init(startupBank: Int? = nil) {
+        self.startupBank = startupBank.flatMap { (0..<BridgeConfiguration.bankCount).contains($0) ? $0 : nil }
+        bank = self.startupBank
+        source = bank == nil ? nil : .startup
+    }
+    public mutating func reset(preservingBank: Bool = false) {
+        let previousBank = bank, previousSource = source
+        self = Self(startupBank: startupBank)
+        if preservingBank { bank = previousBank; source = previousSource }
+    }
     public mutating func select(_ bank: Int?) {
         self.bank = bank.flatMap { (0..<BridgeConfiguration.bankCount).contains($0) ? $0 : nil }
         source = self.bank == nil ? nil : .manual

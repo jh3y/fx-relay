@@ -43,4 +43,3 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
         post(event)
     }
 }
-
