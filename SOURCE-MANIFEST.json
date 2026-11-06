@@ -90,7 +90,7 @@
     "Tests/FXMicCoreTests/DiagnosticSessionTests.swift": "0907a1fe4075b71329a72aae3ae29fa6bd8736920c3b2b93232e13362d69a8d4",
     "Tests/FXMicCoreTests/ForegroundOutputGateTests.swift": "02f57eaed022a0ae6e2c44d3fa0469d4067da4aeec18023fd026db57151a471b",
     "Tests/FXMicCoreTests/HardwareProbeTests.swift": "1a076b74889c74438d7ddd28868770e6a4283261f50c269bcee9e2bd13eac04c",
-    "Tests/FXMicCoreTests/HeldKeyLeaseTests.swift": "af0addd9c50c26a4b658e86977688a5403685b44f11febbfd3fd26394f3ebdf7",
+    "Tests/FXMicCoreTests/HeldKeyLeaseTests.swift": "c9d86926759bcbd4e0aa4d9cd0603c1f1c8e10184ee26e77177117cf0c0e09d4",
     "Tests/FXMicCoreTests/LiveReadingsTests.swift": "76012bbf6df7ac3a9adce26354037f6e13f34d62eb334ca756bd73b0a5e5b2d5",
     "Tests/FXMicCoreTests/PTTConfirmationTests.swift": "5d2f3162f6969aee278d8cc1c64515902e730e1d98cea8cfe8eefe75c74fa755",
     "Tests/FXMicCoreTests/SignalAnalyzerTests.swift": "1484ef303bee3a56cf77ad3a7f2e6aeb9367c634e29af98ae7f85a948df953b7",

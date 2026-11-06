@@ -44,11 +44,14 @@ final class HeldKeyLeaseTests: XCTestCase {
     func testContinuousExpiresWithoutFreshFramesAndCannotRestart() {
         let sink = RecordingSink(), lease = HeldKeyLease(), released = DispatchSemaphore(value: 0)
         XCTAssertTrue(lease.hold(sink, duration: 0.15, continuous: true, onRelease: { released.signal() }))
-        Thread.sleep(forTimeInterval: 0.04); lease.repeatIfDue()
+        // No fresh frames: expiry must release without generating repeats. Do
+        // not assume this test thread is scheduled before the short deadline;
+        // active repetition is exercised separately above.
         XCTAssertEqual(released.wait(timeout: .now() + 2), .success)
         XCTAssertFalse(lease.renew(duration: 1))
         lease.repeatIfDue(); lease.release()
-        XCTAssertEqual(sink.recorded, ["down", "repeat", "up"])
+        XCTAssertEqual(sink.recorded, ["down", "up"])
+        XCTAssertEqual(lease.repeatsPosted, 0)
     }
 
     func testContinuousRequiresARepeatCapableSinkBeforeAnyDown() {
