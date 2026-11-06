@@ -7,7 +7,8 @@ public protocol KeyEventSink: AnyObject {
     func keyUp()
 }
 
-/// Repeats are keyDown events marked as autorepeat, not new down/up pairs.
+/// Repeats are keyDown events; the sink chooses flags appropriate to its delivery
+/// path. They are not separate down/up pairs.
 public protocol RepeatingKeyEventSink: KeyEventSink {
     func keyRepeat()
 }

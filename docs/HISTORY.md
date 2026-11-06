@@ -16,6 +16,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.6.0 | Per-bank handle actions, Agent Banks starter, independent sound detection and clearer routing/keyboard diagnostics |
 | 0.6.1 | Optional continuous key holds for terminal voice modes, with marked autorepeat and safe cancellation |
 | 0.6.2 | Automatic output to the focused app, one Pause control, visible startup bank and preserved bank selection during edits |
+| 0.6.3 | Real terminal receipt testing finds dropped marked repeats; targeted ordinary key-down repeats deliver all Spaces |
 
 ## The interface, then and now
 

@@ -3,17 +3,26 @@ import XCTest
 @testable import FXMicCore
 
 final class ContinuousHoldTests: XCTestCase {
-    func testNativeEventFlagsDistinguishInitialRepeatAndReleaseWithoutPostingKeys() throws {
+    func testTargetedRepeatsUseDeliverableKeyDownsWithoutPostingKeys() throws {
         var events: [CGEvent] = []
         let sink = QuartzChordSink(pid: 0, chord: .init(49, modifiers: 3, label: "⌃⌥Space"), post: { events.append($0.copy()!) })
         XCTAssertTrue(sink.prepare())
         sink.keyDown(); sink.keyRepeat(); sink.keyRepeat(); sink.keyUp()
         XCTAssertEqual(events.map(\.type), [.keyDown, .keyDown, .keyDown, .keyUp])
-        XCTAssertEqual(events.map { $0.getIntegerValueField(.keyboardEventAutorepeat) }, [0, 1, 1, 0])
+        XCTAssertEqual(events.map { $0.getIntegerValueField(.keyboardEventAutorepeat) }, [0, 0, 0, 0])
         XCTAssertTrue(events.allSatisfy { $0.getIntegerValueField(.keyboardEventKeycode) == 49 })
         XCTAssertTrue(events.allSatisfy { $0.flags == [.maskControl, .maskAlternate] })
         XCTAssertTrue(events.allSatisfy { $0.getIntegerValueField(.eventSourceUserData) == 0x4658425247 })
         XCTAssertTrue(zip(events, events.dropFirst()).allSatisfy { $0.timestamp <= $1.timestamp })
+    }
+
+    func testSystemStreamKeepsNativeAutorepeatFlags() {
+        var events: [CGEvent] = []
+        let sink = QuartzChordSink(pid: 0, chord: .space, systemShortcut: true, post: { events.append($0.copy()!) })
+        XCTAssertTrue(sink.prepare())
+        sink.keyDown(); sink.keyRepeat(); sink.keyUp()
+        XCTAssertEqual(events.map(\.type), [.keyDown, .keyDown, .keyUp])
+        XCTAssertEqual(events.map { $0.getIntegerValueField(.keyboardEventAutorepeat) }, [0, 1, 0])
     }
 
     func testInvalidNativeKeyCannotPrepareOrPost() {

@@ -46,6 +46,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let icon = Bundle.main.url(forResource: "AppIcon", withExtension: "icns") {
             NSApp.applicationIconImage = NSImage(contentsOf: icon)
         }
+        configureTerminationSignals()
+        if TerminalDeliveryCheck.runIfRequested() { return }
         BridgeModel.shared.start()
         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { event in
             guard event.keyCode == 49,
@@ -54,6 +56,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Only our own tagged test events are consumed, so they cannot re-press the TEST button.
             return nil
         }
+    }
+
+    private func configureTerminationSignals() {
         for code in [SIGTERM, SIGINT] {
             signal(code, SIG_IGN)
             let source = DispatchSource.makeSignalSource(signal: code, queue: .main)
@@ -66,6 +71,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationWillTerminate(_ notification: Notification) {
+        TerminalDeliveryCheck.cancel()
         BridgeModel.shared.shutdown()
         if let eventMonitor { NSEvent.removeMonitor(eventMonitor) }
         terminationSignals.forEach { $0.cancel() }

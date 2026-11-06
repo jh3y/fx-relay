@@ -8,9 +8,11 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
     private var down: CGEvent?
     private var up: CGEvent?
     private var repeatDown: CGEvent?
+    private let systemShortcut: Bool
     private let post: (CGEvent) -> Void
     public init(pid: pid_t, chord: KeyChord, systemShortcut: Bool = false, post: ((CGEvent) -> Void)? = nil) {
         self.chord = chord
+        self.systemShortcut = systemShortcut
         self.post = post ?? { event in
             if systemShortcut { event.post(tap: .cghidEventTap) } else { event.postToPid(pid) }
         }
@@ -31,7 +33,12 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
             event.setIntegerValueField(.keyboardEventAutorepeat, value: 0)
             event.setIntegerValueField(.eventSourceUserData, value: 0x4658425247)
         }
-        repeatDown?.setIntegerValueField(.keyboardEventAutorepeat, value: 1)
+        // Process-targeted autorepeat-marked events can reach an AppKit receiver
+        // without becoming terminal input. The real iTerm PTY check received only
+        // the initial Space with that combination. Ordinary targeted keyDowns
+        // delivered every repeat, so terminal clients can detect their cadence.
+        // The system event stream retains native autorepeat semantics.
+        repeatDown?.setIntegerValueField(.keyboardEventAutorepeat, value: systemShortcut ? 1 : 0)
         return down != nil && up != nil && repeatDown != nil
     }
     public func keyDown() { send(down) }
