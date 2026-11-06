@@ -65,7 +65,18 @@ The bridge does not transcribe, route, mute, replace or upload your audio. Cue s
 
 FX Relay is designed to stay in the menu bar. Closing its windows leaves capture and control detection running; **Pause** stops both, and **Quit** exits. It runs no speech model. Chart updates are limited to visible surfaces, while signal analysis continues in the background.
 
-A 30.24-second observation of **v0.7.0 on an Apple M2 Max** averaged **5.85% of one CPU core** and **108.5 MiB resident memory** (also the sampled peak). CPU was calculated from the process’s accumulated CPU time divided by elapsed time; memory is RSS. This was an existing user session, with speech and window visibility uncontrolled, not an idle, battery-life or long-duration benchmark. Other devices and an open Signal Monitor can change the cost. These measurements support modest overhead in that session, not a guarantee of trouble-free operation on every Mac.
+Two short observations of **v0.7.0 on an Apple M2 Max**:
+
+| Condition | Duration | CPU, one core = 100% | Resident memory, mean / peak |
+| --- | ---: | ---: | ---: |
+| Existing session; window state uncontrolled | 30.24 s | 5.85% | 108.5 / 108.5 MiB |
+| User confirmed windows and popover closed; capture running | 30.25 s | **4.53%** | **83.0 / 83.5 MiB** |
+
+CPU uses accumulated process CPU time divided by elapsed wall time; memory is RSS. Speech and room noise were uncontrolled in both observations, so the difference is not a measured optimization. This is modest background overhead on this Mac, not zero cost or a battery-life/long-duration study. Other devices and an open Signal Monitor can change the cost.
+
+A separate ten-second stack sample showed the main thread mostly waiting and no sampled hidden-chart rendering. It also found repeated foreground-app checks in the control path: a concrete optimization candidate, provided focus-change key releases remain reliable. No new optimization or measured saving is claimed from that sample.
+
+[Elgato Wave Link](https://www.elgato.com/us/en/s/wave-link-app) mixes and routes multiple audio sources and runs effects. FX Relay observes one input and sends controls, a smaller workload in scope. We have not measured both under matching conditions and cannot claim a CPU or battery advantage over Wave Link.
 
 ## Current status
 
