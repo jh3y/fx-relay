@@ -11,6 +11,8 @@ python3 script/configure_signing.py --create-local
 
 The explicit setup command creates **FX Relay Local Development** in your login Keychain. Its certificate is trusted in the user trust store for code signing only. Its private key is imported as non-extractable, with access granted to `/usr/bin/codesign`. Temporary key files are kept in an owner-only temporary directory and removed after import. macOS may ask for Keychain approval. Never share your login password or private key.
 
+A password prompt naming `codesign` and this signing identity authorizes access to the private key. The login Keychain normally uses your Mac login password; macOS may also request authentication when the certificate's trust is set. Enter that password only into the macOS dialog. The setup script does not request or store your login password. Running FX Relay normally does not use the signing key or require a password; Microphone and Accessibility approvals are separate.
+
 The selected public certificate fingerprint is saved in `.local/signing-identity.txt`, excluded from Git, snapshots and public exports. Running setup again reuses the existing valid identity. If a partial setup or duplicate certificate is found, it stops for review instead of creating more keys. Do not delete/recreate this identity on each build.
 
 To remove the local build configuration, delete `.local/signing-identity.txt`. If you no longer need its identity, use Keychain Access to remove **FX Relay Local Development** and its associated private key from your login Keychain. This is separate from uninstalling the app. Removing the certificate affects future signing and may affect trust in builds signed with it.

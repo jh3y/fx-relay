@@ -9,7 +9,7 @@ import shutil
 ROOT = Path(__file__).resolve().parent.parent
 FILES = ['Package.swift', 'README.md', 'CONTRIBUTING.md', 'THIRD_PARTY_NOTICES.md']
 TREES = ['Sources', 'Tests', 'Resources', 'hardware', 'profiles', '.github', 'licenses']
-DOCS = ['GETTING_STARTED.md', 'PROFILES.md', 'VOICE_OPTIONS.md', 'dictation-check.html', 'DEVELOPMENT.md', 'HISTORY.md', 'BRANDING.md', 'MANAGED_MACS.md', 'VOICE_BANK_CHECK.md', 'SIGNING.md']
+DOCS = ['GETTING_STARTED.md', 'PROFILES.md', 'VOICE_OPTIONS.md', 'DEVELOPMENT.md', 'HISTORY.md', 'BRANDING.md', 'MANAGED_MACS.md', 'VOICE_BANK_CHECK.md', 'SIGNING.md']
 SCRIPTS = ['configure_signing.py', 'check_terminal_output.sh', 'prepare_terminal_check.py', 'terminal_receiver.py', 'build_and_run.sh', 'configure_mic.py', 'switch_bank_probe.py', 'install_four_banks.py',
            'generate_icon.swift', 'generate_brand.py', 'render_vectors.swift', 'render_ui.sh', 'render_ui.swift',
            'export_profiles.sh', 'export_profiles.swift', 'export_repository.py', 'summarize_diagnostic.py']
