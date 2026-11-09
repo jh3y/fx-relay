@@ -46,6 +46,15 @@ import SwiftUI
         model.profiles.select(ProfileTemplate.bankWorkflows.starterID)
         try render("bank-handle", page: 0, slot: -1, width: 1020, height: 740)
         try render("bank-handle-small", page: 0, slot: -1, width: 860, height: 560)
+        let originalBankConfiguration = model.profiles.selected.configuration
+        var optionConfiguration = originalBankConfiguration
+        var option = BridgeAction(.holdKey, ModifierKey.option.chord)
+        option.delivery = .systemShortcut
+        optionConfiguration.handleActions[0] = option
+        model.profiles.update(configuration: optionConfiguration)
+        try render("option-handle", page: 0, slot: -1, width: 1020, height: 740)
+        try render("option-handle-small-dark", page: 0, slot: -1, width: 860, height: 560, dark: true)
+        model.profiles.update(configuration: originalBankConfiguration)
         try render("handle-overview", page: -1, width: 1020, height: 740, dark: true)
         try render("signal-monitor", page: 0, surface: "monitor", width: 760, height: 1000)
         try render("menu", page: 0, surface: "menu", width: 380, height: 800)

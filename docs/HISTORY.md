@@ -18,6 +18,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.6.2 | Automatic output to the focused app, one Pause control, visible startup bank and preserved bank selection during edits |
 | 0.6.3 | Real terminal receipt testing finds dropped marked repeats; targeted ordinary key-down repeats deliver all Spaces |
 | 0.7.0 | Guided setup, honest capture/permission readiness, four-bank reference, Launch at Login, refined branding and stable local signing |
+| 0.7.1 | Standalone modifier holds and system delivery for handle actions, including Option for external dictation apps |
 
 ## The interface, then and now
 

@@ -10,15 +10,24 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
     private var repeatDown: CGEvent?
     private let systemShortcut: Bool
     private let post: (CGEvent) -> Void
-    public init(pid: pid_t, chord: KeyChord, systemShortcut: Bool = false, post: ((CGEvent) -> Void)? = nil) {
+    private let hardwareFlags: () -> CGEventFlags
+    public init(pid: pid_t, chord: KeyChord, systemShortcut: Bool = false,
+                hardwareFlags: @escaping () -> CGEventFlags = { CGEventSource.flagsState(.hidSystemState) },
+                post: ((CGEvent) -> Void)? = nil) {
         self.chord = chord
         self.systemShortcut = systemShortcut
+        self.hardwareFlags = hardwareFlags
         self.post = post ?? { event in
             if systemShortcut { event.post(tap: .cghidEventTap) } else { event.postToPid(pid) }
         }
     }
     public func prepare() -> Bool {
+        down = nil; up = nil; repeatDown = nil
         guard chord.keyCode <= 127 else { return false }
+        if let modifier = chord.modifierKey {
+            // Do not take ownership of a modifier already pressed on the keyboard.
+            guard chord.modifiers == 0, !hardwareFlags().contains(modifier.flag) else { return false }
+        }
         let source = CGEventSource(stateID: .privateState)
         down = CGEvent(keyboardEventSource: source, virtualKey: chord.keyCode, keyDown: true)
         up = CGEvent(keyboardEventSource: source, virtualKey: chord.keyCode, keyDown: false)
@@ -39,11 +48,25 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
         // delivered every repeat, so terminal clients can detect their cadence.
         // The system event stream retains native autorepeat semantics.
         repeatDown?.setIntegerValueField(.keyboardEventAutorepeat, value: systemShortcut ? 1 : 0)
+        if let modifier = chord.modifierKey {
+            down?.type = .flagsChanged
+            down?.flags = modifier.flags
+            up?.type = .flagsChanged
+            up?.flags = []
+        }
         return down != nil && up != nil && repeatDown != nil
     }
-    public func keyDown() { send(down) }
-    public func keyUp() { send(up) }
-    public func keyRepeat() { send(repeatDown) }
+    public func keyDown() {
+        if let modifier = chord.modifierKey { down?.flags = hardwareFlags().union(modifier.flags) }
+        send(down)
+    }
+    public func keyUp() {
+        // Private-source events do not own the hardware state. Preserve any
+        // physical modifiers the user pressed during the synthetic hold.
+        if chord.modifierKey != nil { up?.flags = hardwareFlags() }
+        send(up)
+    }
+    public func keyRepeat() { if chord.modifierKey == nil { send(repeatDown) } }
     private func send(_ event: CGEvent?) {
         guard let event else { return }
         event.timestamp = DispatchTime.now().uptimeNanoseconds

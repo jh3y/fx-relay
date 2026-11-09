@@ -50,7 +50,7 @@ final class ContinuousHoldTests: XCTestCase {
         XCTAssertEqual(try store.load(legacy: .init()), library)
         let data = try ProfileCodec.encode(library.selected)
         XCTAssertEqual(try ProfileCodec.decode(data), library.selected)
-        XCTAssertEqual((try JSONSerialization.jsonObject(with: data) as! [String: Any])["schemaVersion"] as? Int, 4)
+        XCTAssertEqual((try JSONSerialization.jsonObject(with: data) as! [String: Any])["schemaVersion"] as? Int, 5)
         XCTAssertEqual(library.selected.configuration.handleActions[1].kind, .holdKey)
     }
 }

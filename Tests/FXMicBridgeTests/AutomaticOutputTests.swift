@@ -23,13 +23,16 @@ import XCTest
         var utilityFocused = false
         var focused = true
         var sinks: [Sink] = []
+        var systemDeliveries: [Bool] = []
         var log: [String] = []
         var router = BankHandleRouter(startupBank: 0)
         var config = BridgeConfiguration()
         lazy var dispatcher = ActionDispatcher(
             frontmost: { [unowned self] in self.focused ? KeyboardTarget(processIdentifier: 101, localizedName: "Test target") : nil },
             hasAccessibility: { [unowned self] in self.trusted }, utilityFocused: { [unowned self] in self.utilityFocused }, now: { [unowned self] in self.time },
-            makeKeySink: { [unowned self] _, _, _ in let sink = Sink(); self.sinks.append(sink); return sink })
+            makeKeySink: { [unowned self] _, _, system in
+                let sink = Sink(); self.sinks.append(sink); self.systemDeliveries.append(system); return sink
+            })
         init() {
             config.handleActions = Array(repeating: .init(.holdKeyContinuous), count: 4)
             dispatcher.onEvent = { [weak self] in self?.log.append($0) }
@@ -133,5 +136,77 @@ import XCTest
         XCTAssertFalse(SettingsStore(defaults: defaults).loadMonitoringEnabled())
         store.saveMonitoringEnabled(true)
         XCTAssertTrue(SettingsStore(defaults: defaults).loadMonitoringEnabled())
+    }
+
+    func testGlobalOptionHoldReleasesOnSoundEndAndMappingChangeWithoutRepeats() async throws {
+        let h = Harness(); defer { h.cleanUp() }
+        var option = BridgeAction(.holdKey, ModifierKey.option.chord)
+        option.delivery = .systemShortcut
+        h.config.handleActions = Array(repeating: option, count: 4)
+        h.readyAndHold()
+        try await Task.sleep(for: .milliseconds(45))
+        h.frame(active: true)
+        XCTAssertEqual(h.systemDeliveries, [true])
+        XCTAssertEqual(h.sinks[0].downs, 1); XCTAssertEqual(h.sinks[0].repeats, 0)
+        h.frame(active: false, transition: false)
+        XCTAssertEqual(h.sinks[0].ups, 1)
+        h.frame(active: true, transition: true)
+        h.config.handleActions[0] = .init(.holdKeyContinuous)
+        h.frame(active: true)
+        XCTAssertEqual(h.sinks[1].ups, 1)
+        h.frame(active: false, transition: false)
+        h.frame(active: true, transition: true)
+        XCTAssertEqual(h.systemDeliveries, [true, true, false])
+    }
+
+    func testGlobalModifierUsesExistingInterruptReleasePaths() async {
+        for interruption in ["focus", "permission", "bank", "Paused", "Input disconnected", "App quitting", "Capture error"] {
+            let h = Harness(); defer { h.cleanUp() }
+            var option = BridgeAction(.holdKey, ModifierKey.option.chord)
+            option.delivery = .systemShortcut
+            h.config.handleActions = [option, .init(.none), .init(.none), .init(.none)]
+            h.readyAndHold()
+            switch interruption {
+            case "focus": h.focused = false; h.dispatcher.checkFocus()
+            case "permission": h.trusted = false; h.dispatcher.checkFocus()
+            case "bank":
+                h.router.select(1); h.frame(active: true)
+            default: h.dispatcher.setAvailability(blockedBy: interruption)
+            }
+            XCTAssertEqual(h.sinks.first?.ups, 1, interruption)
+            h.dispatcher.disable(reason: interruption)
+            XCTAssertEqual(h.sinks.first?.ups, 1, "Duplicate release: \(interruption)")
+        }
+    }
+
+    func testGlobalModifierExpiresWithoutMoreFrames() async throws {
+        let h = Harness(); defer { h.cleanUp() }
+        var option = BridgeAction(.holdKey, ModifierKey.option.chord)
+        option.delivery = .systemShortcut
+        h.config.handleActions = Array(repeating: option, count: 4)
+        h.readyAndHold()
+        try await Task.sleep(for: .milliseconds(800))
+        XCTAssertEqual(h.sinks.first?.ups, 1)
+        XCTAssertFalse(h.dispatcher.pttHeld)
+        h.frame(active: true)
+        XCTAssertEqual(h.sinks.count, 1)
+    }
+
+    func testSampleCannotAlterTheFlagsOfAnActiveModifierHold() async {
+        let h = Harness(); defer { h.cleanUp() }
+        var option = BridgeAction(.holdKey, ModifierKey.option.chord)
+        option.delivery = .systemShortcut
+        h.config.handleActions = Array(repeating: option, count: 4)
+        h.readyAndHold()
+        h.time += 0.04
+        let frame = ControlFrame(time: h.time - 0.001, rmsDB: -30, sampleRate: 48000, channel: 0,
+            pttActive: true, pttTransition: nil, pttEvaluation: nil,
+            tone: ToneObservation(candidate: 0, detected: 0, heldControl: 0, frequency: 1500, confidence: 1))
+        h.dispatcher.process(frame, configuration: h.config, handle: h.router.process(frame, configuration: h.config))
+        XCTAssertEqual(h.sinks.count, 1)
+        XCTAssertEqual(h.sinks[0].ups, 0)
+        XCTAssertTrue(h.log.contains { $0.contains("cannot overlap") })
+        h.frame(active: false, transition: false)
+        XCTAssertEqual(h.sinks[0].ups, 1)
     }
 }

@@ -9,6 +9,7 @@ public struct KeyChord: Codable, Equatable, Sendable {
         self.keyCode = keyCode; self.modifiers = modifiers & 15; self.label = label
     }
     public static let space = KeyChord(49, label: "Space")
+    public var modifierKey: ModifierKey? { ModifierKey(rawValue: keyCode) }
     public static let presets: [KeyChord] = [.space, .init(36, label: "Return"), .init(53, label: "Escape"),
         .init(48, label: "Tab"), .init(8, modifiers: 1, label: "⌃C"), .init(40, modifiers: 8, label: "⌘K"),
         .init(48, modifiers: 4, label: "⇧⇥"), .init(35, modifiers: 12, label: "⇧⌘P")]
@@ -25,6 +26,8 @@ public struct BridgeAction: Codable, Equatable, Sendable {
     public var delivery = Delivery.targetApp
     public init(_ kind: Kind, _ chord: KeyChord = .space) { self.kind = kind; self.chord = chord }
     public var isHold: Bool { kind == .holdKey || kind == .holdKeyContinuous }
+    public var supportsSystemDelivery: Bool { kind == .shortcut || kind == .holdKey }
+    public var usesSystemDelivery: Bool { supportsSystemDelivery && delivery == .systemShortcut }
     public var label: String {
         if kind == .none { return "Unassigned" }
         if kind == .typeText { return "\(text.isEmpty ? "Type text" : String(text.prefix(28)))\(pressEnter ? " ↵" : "")" }

@@ -121,7 +121,7 @@ final class BankHandleTests: XCTestCase {
         let data = try ProfileCodec.encode(profile)
         XCTAssertEqual(try ProfileCodec.decode(data), profile)
         var json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertEqual(json["schemaVersion"] as? Int, 4)
+        XCTAssertEqual(json["schemaVersion"] as? Int, 5)
         json["schemaVersion"] = 2
         var c = json["profile"] as! [String: Any]
         var config = c["configuration"] as! [String: Any]

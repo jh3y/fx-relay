@@ -124,6 +124,12 @@ final class ActionDispatcher {
     private func activate(_ action: BridgeAction, id: Int) {
         guard action.kind != .none, let target, frontmost()?.processIdentifier == target.processIdentifier else { return }
         guard !textRunner.isBusy else { onEvent?("Control \(id) skipped · text action still running"); return }
+        // A global modifier can alter another macro or be cleared by its flags.
+        // Serialize modifier gestures with all other bridge key actions.
+        guard !held.values.contains(where: { $0.chord.modifierKey != nil }),
+              action.chord.modifierKey == nil || held.isEmpty else {
+            onEvent?("Control \(id) skipped · modifier holds cannot overlap other key actions"); return
+        }
         if action.kind == .typeText {
             guard held.isEmpty else { onEvent?("Control \(id) skipped · release held keys before typing text"); return }
             let pid = target.processIdentifier
@@ -145,7 +151,7 @@ final class ActionDispatcher {
             onEvent?("Control \(id) skipped · key already held"); return
         }
         let sink = makeKeySink(target.processIdentifier, action.chord,
-                               action.kind == .shortcut && action.delivery == .systemShortcut)
+                               action.usesSystemDelivery)
         if action.isHold {
             let lease = HeldKeyLease(), token = UUID()
             guard lease.hold(sink, duration: 0.6, continuous: action.kind == .holdKeyContinuous, onRelease: { [weak self] in
@@ -156,7 +162,7 @@ final class ActionDispatcher {
             }) else { disable(reason: "Could not prepare keyboard events"); return }
             held[id] = (lease, action.chord, token)
             if id == 0 { pttHeld = true }
-            onEvent?("\(id == 0 ? "PTT" : "Control \(id)") DOWN posted · \(action.chord.label)\(action.kind == .holdKeyContinuous ? " · continuous repeat" : "")")
+            onEvent?("\(id == 0 ? "PTT" : "Control \(id)") DOWN posted · \(action.chord.label)\(action.kind == .holdKeyContinuous ? " · continuous repeat" : "")\(action.usesSystemDelivery ? " · macOS shortcut" : "")")
         } else {
             guard sink.prepare() else { disable(reason: "Could not prepare keyboard events"); return }
             sink.keyDown(); sink.keyUp()
