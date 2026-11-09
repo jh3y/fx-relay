@@ -1,3 +1,4 @@
+import FXMicCore
 import SwiftUI
 import ServiceManagement
 
@@ -34,5 +35,30 @@ struct LaunchAtLoginToggle: View {
                 Text(error).font(.caption).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
             }
         }.onAppear { manager.refresh() }
+    }
+}
+
+/// Short operational state; signal activity remains separate in the input meter.
+struct ReadinessBadge: View {
+    let readiness: FXMicCore.BridgeReadiness
+    private var title: String {
+        switch readiness {
+        case .ready: return "Ready"
+        case .paused: return "Paused"
+        case .microphonePermission, .accessibilityPermission: return "Access needed"
+        case .chooseInput: return "Choose input"
+        case .disconnected: return "Disconnected"
+        case .unsavedMappings: return "Editing"
+        case .diagnostic: return "Measuring"
+        case .captureError: return "Input error"
+        case .installing: return "Installing"
+        case .connecting, .waitingForAudio: return "Connecting"
+        }
+    }
+    var body: some View {
+        Label(title, systemImage: readiness == .ready ? "checkmark.circle" : readiness == .paused ? "pause.circle" : "exclamationmark.circle")
+            .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+            .lineLimit(1).help(readiness.title + ": " + readiness.detail)
+            .accessibilityLabel(readiness.title)
     }
 }

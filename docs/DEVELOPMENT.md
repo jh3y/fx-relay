@@ -33,7 +33,7 @@ FFT refresh is capped at 10 Hz, visible readings at 15 Hz, and diagnostic measur
 xcrun swift script/generate_icon.swift
 iconutil -c icns Resources/AppIcon.iconset -o Resources/AppIcon.icns
 python3 script/generate_brand.py
-./script/render_ui.sh docs/previews/v0.7.0
+./script/render_ui.sh docs/previews/v0.8.0
 ```
 
 The render helper compiles the actual SwiftUI screens with optimized core artifacts and an isolated preference suite. It never starts audio or posts keys. Its light/dark PNGs and width/height assertions are layout checks; they do not replace live interaction checks. The helper currently targets Apple Silicon. Build the core with the full Xcode toolchain before using it.
@@ -65,3 +65,10 @@ With iTerm2 installed, run `./script/check_terminal_output.sh`. This stops the d
 Quit the bridge, then run `open -n "dist/FX Relay.app" --args --modifier-release-check /tmp/fx-relay-modifier-check.json`. Release keyboard modifiers and leave its temporary window focused. The check briefly presses Shift, reproduces the old release with immediate cleanup, then verifies normal release, lease expiry and a subsequent hold at both the annotated session event tap and AppKit receiver. It records only its own tagged Shift events, captures no audio, closes itself and quits. Reopen FX Relay normally afterward. This checks native event delivery; dictation insertion remains a separate target-app test.
 
 Development builds without a configured certificate use ad-hoc signatures. Rebuilding those may require Accessibility approval again (toggle FX Relay off/on in System Settings) and microphone access to be renewed from the app. Use [local development signing](SIGNING.md) to keep subsequent builds certificate-bound. Confirm capture has actually started before evaluating hardware: v0.7’s Ready status requires both permissions and incoming audio buffers. It does not claim a physical control was verified. The build does not modify TCC or weaken the signing requirement.
+
+
+## Contact UI review
+
+`script/render_ui.sh` builds an isolated screenshot executable with `FXRELAY_PREVIEW`. Only that executable includes fixture setters; its capture, permission-refresh and output-reconciliation paths are compiled out. Never set that flag for a production app. It uses a temporary preference domain and never starts audio or posts keys.
+
+The review includes light/dark views, minimum editor size, missing permissions/input, disconnection, pause, unknown bank, unsaved state, long names, and a simulated solid/high-contrast fallback. Menu captures measure natural height rather than forcing content into a fixed rectangle. Native lists render in an offscreen AppKit window; screenshots capture content, not the SwiftUI scene's toolbar or desktop backdrop. Use the running app for those, keyboard navigation and VoiceOver. A development launch with `open "dist/FX Relay.app" --args --show-mappings` presents the editor without changing normal startup.

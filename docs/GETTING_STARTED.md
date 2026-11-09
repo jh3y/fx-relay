@@ -4,6 +4,10 @@ Use the FX-MIC's analogue output through a Mac audio-input adapter. USB-C is for
 
 On first launch, **Setup** walks through permissions, input, the cue pack and a profile. Existing users keep their selected input and mappings; reopen Setup from the menu bar when needed. **Ready** requires Microphone and Accessibility access plus actual capture from the selected input. It confirms software readiness; the checks below establish that your physical controls and target app behave as expected.
 
+The popover's numbered **01–04** control explicitly selects the current microphone bank. **Mappings…** opens the editor; selecting a bank in its sidebar only edits that bank. The profile selector and profile actions are in the editor's toolbar. Apply/Revert remain explicit.
+
+The popover's **…** menu contains Setup, Bank Reference and Signal Monitor. **Launch at Login** is in **Setup → Workflow**. Appearance follows macOS; Reduce Transparency and Increase Contrast use solid surfaces.
+
 ## 1. Install the standard four-bank pack
 
 In **Setup → Cue pack** (also available in **Mappings → Mic & Workflows**), choose the mounted normal **FX MIC DISK** drive. Inspection is read-only. The app shows exactly which files it will write. Click **Install Four Banks** to apply the inspected plan. Continue without installing if you already use a compatible pack.

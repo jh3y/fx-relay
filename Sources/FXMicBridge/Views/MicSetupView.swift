@@ -8,10 +8,10 @@ struct MicSetupView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
                     BridgeStyle.label("01 / HARDWARE")
-                    Text("Four banks. Ready when you are.").font(.title2.weight(.semibold))
+                    Text("Four-bank cue pack").font(.system(size: 18, weight: .semibold))
                 }
                 Spacer()
-                Image(systemName: "externaldrive.fill").font(.system(size: 28)).foregroundStyle(BridgeStyle.orange)
+                Image(systemName: "externaldrive.fill").font(.system(size: 22)).foregroundStyle(BridgeStyle.orange)
             }
             Text("The standard cue pack includes Base / FX 1, FX 2, FX 3 and FX 4. USB-C loads the pack; your audio adapter carries the control signals during use.")
                 .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -21,7 +21,7 @@ struct MicSetupView: View {
                         Text(String(format: "%02d", bank + 1)).font(.system(.title3, design: .monospaced))
                         Text(bank == 0 ? "BASE / FX 1" : "FX \(bank + 1)").font(.system(size: 9, design: .monospaced))
                     }.frame(maxWidth: .infinity).padding(12)
-                        .background(BridgeStyle.orange.opacity(0.07), in: RoundedRectangle(cornerRadius: 8))
+                        .bridgeWell()
                 }
             }
             Text(setup.message).font(.callout).fixedSize(horizontal: false, vertical: true)
@@ -48,6 +48,6 @@ struct MicSetupView: View {
             if let error = setup.error { Text(error).foregroundStyle(.red).font(.callout).fixedSize(horizontal: false, vertical: true) }
             Text("After ejecting, resume from the menu bar and check each bank with Signal Monitor focused. A custom or unexpected pack is left for you to review. Firmware is managed separately.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-        }.padding(20).background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
+        }
     }
 }

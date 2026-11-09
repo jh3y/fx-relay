@@ -30,3 +30,12 @@ final class PermissionManager {
         NSWorkspace.shared.open(url)
     }
 }
+
+#if FXRELAY_PREVIEW
+extension PermissionManager {
+    func prepareVisualPreview(microphone: Bool, accessibility: Bool) {
+        self.microphone = microphone ? .authorized : .denied
+        self.accessibility = accessibility
+    }
+}
+#endif

@@ -1,14 +1,11 @@
-# FX Relay — visual identity
+# FX Relay — Contact identity
 
-**FX Relay** is the chosen product name: the microphone provides a physical signal, and the utility relays it as a configurable action. It was previously called FX-MIC Bridge. The source repository is [jh3y/fx-relay](https://github.com/jh3y/fx-relay).
+The Contact identity uses two terminals and an open orange arm, reflecting the bridge between a physical microphone and a configurable action. It is an original relay symbol, with no manufacturer marks or implied affiliation.
 
-The direction is a small instrument panel: warm neutral surfaces, charcoal, a restrained orange accent, monospaced labels, numbered banks and clear physical controls. The v0.7 icon uses a graphite tile, cream mic silhouette, orange trigger/output port and four recessed bank indicators. The smallest size omits detail to preserve the silhouette. Light/dark appearance follows macOS. Avoid copying Teenage Engineering's logo or implying official affiliation.
+Light mode uses warm off-white (`#F5F3EC`); dark mode uses graphite (`#292B28`). Orange (`#FF5A1F`) highlights selection and activity. System typography and controls remain native; monospaced type is reserved for bank numbers, shortcuts and measurements. Native material appears once at the window surface, with solid control wells. Reduce Transparency and Increase Contrast switch to solid surfaces.
 
-Original assets:
+- [App icon](brand/icon.svg): original vector artwork rendered at each native icon size, with transparent outer margins. The concept-study background and shadow are not included.
+- [Menu symbol](brand/contact-symbol.svg): a separate monochrome drawing. Runtime state changes the contact rather than adding another status dot.
+- [README header](brand/hero.svg) and [wordmark](brand/wordmark.svg).
 
-- [App icon SVG](brand/icon.svg), plus the native multi-size `.icns` in Resources.
-- [README header](brand/hero.svg).
-- [Wordmark](brand/wordmark.svg).
-- The menu-bar template mark stays recognizable while its status indicator changes.
-
-`script/generate_brand.py` produces the editable vector assets. `script/generate_icon.swift` produces the icon sizes. No stock images, remote fonts or generated raster logo are required.
+The Swift renderer in `script/generate_icon.swift` produces the `.iconset`; `iconutil` packages it as `.icns`. `script/generate_brand.py` produces editable SVG assets. No remote fonts, new design framework or generated raster logo are needed at runtime.

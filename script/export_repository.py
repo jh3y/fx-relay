@@ -31,7 +31,7 @@ def export(destination):
     for name in TREES: copy(ROOT/name, destination/name)
     for name in DOCS: copy(ROOT/'docs'/name, destination/'docs'/name)
     copy(ROOT/'docs/brand', destination/'docs/brand')
-    for version in ['v0.4.0', 'v0.5.0', 'v0.6.0', 'v0.6.1', 'v0.6.2', 'v0.7.0']:
+    for version in ['v0.4.0', 'v0.5.0', 'v0.6.0', 'v0.6.1', 'v0.6.2', 'v0.7.0', 'v0.8.0']:
         copy(ROOT/'docs/previews'/version, destination/'docs/previews'/version)
     for name in SCRIPTS: copy(ROOT/'script'/name, destination/'script'/name)
     (destination/'.gitignore').write_text('.build/\n.swiftpm/\n.local/\ndist/\n.DS_Store\n__pycache__/\n*.pyc\ndiagnostics/\nhardware-backups/\nversions/\n')

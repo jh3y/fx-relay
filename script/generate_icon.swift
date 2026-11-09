@@ -1,4 +1,4 @@
-// Original vector icon rendered at every macOS icon size. No third-party imagery.
+// Original Contact vector artwork. Transparent exterior; no baked presentation background.
 import Foundation
 import CoreGraphics
 import ImageIO
@@ -6,37 +6,34 @@ import UniformTypeIdentifiers
 
 let output = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "Resources/AppIcon.iconset")
 try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
-func color(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat) -> CGColor { CGColor(red: r, green: g, blue: b, alpha: 1) }
+func color(_ hex: UInt32) -> CGColor {
+    CGColor(red: CGFloat((hex >> 16) & 255) / 255, green: CGFloat((hex >> 8) & 255) / 255,
+            blue: CGFloat(hex & 255) / 255, alpha: 1)
+}
 func render(_ size: Int, name: String) throws {
+    let space = CGColorSpaceCreateDeviceRGB()
     let c = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0,
-                      space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                      space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
     c.scaleBy(x: CGFloat(size) / 1024, y: CGFloat(size) / 1024)
-    func rounded(_ rect: CGRect, _ radius: CGFloat, _ fill: CGColor) {
-        c.setFillColor(fill); c.addPath(CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)); c.fillPath()
-    }
-    let ink = color(0.12, 0.13, 0.13), paper = color(0.94, 0.93, 0.88), orange = color(0.97, 0.31, 0.11)
-    c.saveGState(); c.setShadow(offset: CGSize(width: 0, height: -8), blur: 25, color: CGColor(gray: 0, alpha: 0.18))
-    rounded(CGRect(x: 58, y: 58, width: 908, height: 908), 196, ink); c.restoreGState()
-    c.setStrokeColor(CGColor(gray: 1, alpha: 0.18)); c.setLineWidth(3)
-    c.addPath(CGPath(roundedRect: CGRect(x: 60, y: 60, width: 904, height: 904), cornerWidth: 194, cornerHeight: 194, transform: nil)); c.strokePath()
-    // One strong silhouette stays legible at 16 px. Details only enter at 32 px.
-    rounded(CGRect(x: 272, y: 414, width: 324, height: 404), 112, paper)
-    rounded(CGRect(x: 382, y: 204, width: 104, height: 310), 34, paper)
-    rounded(CGRect(x: 522, y: 246, width: 64, height: 156), 24, orange)
+    let tile = CGPath(roundedRect: CGRect(x: 80, y: 80, width: 864, height: 864), cornerWidth: 190, cornerHeight: 190, transform: nil)
+    c.saveGState(); c.addPath(tile); c.clip()
+    let gradient = CGGradient(colorsSpace: space, colors: [color(0x242724), color(0x363B37)] as CFArray, locations: [0, 1])!
+    c.drawLinearGradient(gradient, start: CGPoint(x: 0, y: 80), end: CGPoint(x: 1024, y: 944), options: [])
+    c.setLineCap(.round)
+    c.setStrokeColor(color(0xF1EBD0)); c.setLineWidth(46)
+    c.move(to: CGPoint(x: 80, y: 350)); c.addLine(to: CGPoint(x: 310, y: 350)); c.strokePath()
+    c.move(to: CGPoint(x: 714, y: 674)); c.addLine(to: CGPoint(x: 944, y: 674)); c.strokePath()
+    c.setStrokeColor(color(0xFF5A1F)); c.setLineWidth(size <= 32 ? 62 : 58)
+    c.move(to: CGPoint(x: 310, y: 350)); c.addLine(to: CGPoint(x: 615, y: 611)); c.strokePath()
+    c.setFillColor(color(0xF1EBD0))
+    c.fillEllipse(in: CGRect(x: 245, y: 285, width: 130, height: 130))
+    c.fillEllipse(in: CGRect(x: 649, y: 609, width: 130, height: 130))
+    c.restoreGState()
     if size >= 32 {
-        for y in [520, 584, 648, 712] { rounded(CGRect(x: 334, y: y, width: 200, height: 22), 11, ink) }
-        rounded(CGRect(x: 636, y: 507, width: 110, height: 20), 10, color(0.42, 0.43, 0.41))
+        c.addPath(tile); c.setStrokeColor(CGColor(gray: 1, alpha: 0.20)); c.setLineWidth(2); c.strokePath()
     }
-    c.setFillColor(orange); c.fillEllipse(in: CGRect(x: 694, y: 459, width: 116, height: 116))
-    // Four recessed bank indicators form the quiet instrument detail.
-    if size >= 64 {
-    for i in 0..<4 {
-        rounded(CGRect(x: 653, y: 260 + i * 33, width: 20, height: 12), 5, i == 3 ? orange : color(0.34, 0.35, 0.33))
-    }
-    }
-    let image = c.makeImage()!
-    let destination = CGImageDestinationCreateWithURL(output.appendingPathComponent(name) as CFURL, UTType.png.identifier as CFString, 1, nil)
-    guard let destination else { throw NSError(domain: "Icon", code: 1) }
+    guard let image = c.makeImage(), let destination = CGImageDestinationCreateWithURL(
+        output.appendingPathComponent(name) as CFURL, UTType.png.identifier as CFString, 1, nil) else { throw NSError(domain: "Icon", code: 1) }
     CGImageDestinationAddImage(destination, image, nil)
     guard CGImageDestinationFinalize(destination) else { throw NSError(domain: "Icon", code: 2) }
 }
@@ -44,4 +41,4 @@ for size in [16, 32, 128, 256, 512] {
     try render(size, name: "icon_\(size)x\(size).png")
     try render(size * 2, name: "icon_\(size)x\(size)@2x.png")
 }
-print("Rendered FX Relay icon: \(output.path)")
+print("Rendered Contact icon: \(output.path)")

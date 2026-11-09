@@ -19,21 +19,13 @@ struct SetupWindowView: View {
                 BridgeBrand()
                 Spacer()
                 BridgeStyle.label("SETUP / \(String(format: "%02d", step + 1))")
-            }.padding(24)
-            HStack(spacing: 0) {
+            }.padding(.horizontal, 24).padding(.vertical, 16)
+            Picker("Setup step", selection: $step) {
                 ForEach(0..<4) { index in
-                    Button { step = index } label: {
-                        HStack(spacing: 8) {
-                            Text(String(format: "%02d", index + 1)).font(.system(.caption, design: .monospaced))
-                            Text(titles[index]).font(.callout.weight(step == index ? .semibold : .regular))
-                        }.frame(maxWidth: .infinity).padding(.vertical, 12)
-                            .foregroundStyle(step == index ? BridgeStyle.orange : Color.secondary)
-                            .background(step == index ? BridgeStyle.orange.opacity(0.08) : .clear)
-                            .contentShape(Rectangle())
-                    }.buttonStyle(.plain).disabled(model.micSetup.busy)
-                        .accessibilityAddTraits(step == index ? [.isSelected] : [])
+                    Text(String(format: "%02d", index + 1) + "  " + titles[index]).tag(index)
                 }
-            }
+            }.pickerStyle(.segmented).labelsHidden().disabled(model.micSetup.busy)
+                .padding(.horizontal, 24).padding(.bottom, 16)
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
@@ -58,7 +50,7 @@ struct SetupWindowView: View {
             }.padding(20)
         }
         .frame(minWidth: 620, idealWidth: 680, minHeight: 570, idealHeight: 670)
-        .tint(BridgeStyle.orange)
+        .bridgeSurface()
         .background(WindowVisibilityObserver(onChange: { source, visible in
             model.readings.setVisible(.menu, source: source, visible: visible)
         }))
@@ -79,13 +71,13 @@ struct SetupWindowView: View {
     }
     private func heading(_ title: String, _ detail: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.system(size: 26, weight: .semibold))
+            Text(title).font(.system(size: 20, weight: .semibold))
             Text(detail).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
     }
     private var accessStep: some View {
         VStack(alignment: .leading, spacing: 24) {
-            heading("Your mic. Your commands.", "FX Relay turns the mic’s control signals into keys and shortcuts. Speech stays with the app you choose.")
+            heading("Allow access", "FX Relay turns the mic’s control signals into keys and shortcuts. Speech stays with the app you choose.")
             permissionRow("Microphone", symbol: "mic", allowed: model.permissions.microphone == .authorized,
                           detail: "Measure levels and recognise the mic’s control cues.") {
                 if model.permissions.microphone == .notDetermined { model.requestMicrophone() }
@@ -115,7 +107,7 @@ struct SetupWindowView: View {
     }
     private var inputStep: some View {
         VStack(alignment: .leading, spacing: 22) {
-            heading("Connect the signal.", "Connect the FX-MIC’s audio output to your adapter, then choose that input below. USB-C is used separately to load the cue pack.")
+            heading("Select the audio input", "Connect the FX-MIC’s audio output to your adapter, then choose that input below. USB-C is used separately to load the cue pack.")
             InputPicker(model: model)
             MenuLevelView(model: model)
             ReadinessView(model: model)
@@ -136,7 +128,7 @@ struct SetupWindowView: View {
     }
     private var workflowStep: some View {
         VStack(alignment: .leading, spacing: 20) {
-            heading("Make it yours.", "A profile holds all four banks, including a separate handle mapping for each. Select an existing profile, then customise it in Mappings.")
+            heading("Choose a workflow", "A profile holds all four banks, including a separate handle mapping for each. Select an existing profile, then customise it in Mappings.")
             ProfilePicker(model: model)
             if let name = model.profiles.selected.template, let template = ProfileTemplate(rawValue: name) {
                 Text(template.summary).font(.callout).foregroundStyle(.secondary)

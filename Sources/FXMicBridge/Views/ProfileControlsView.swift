@@ -7,6 +7,7 @@ struct ProfilePicker: View {
         Picker("Profile", selection: Binding(get: { model.profiles.library.selectedID }, set: model.profiles.select)) {
             ForEach(model.profiles.library.profiles) { profile in Text(profile.name).tag(profile.id) }
         }.disabled(model.diagnostics.isRecording || model.hasUnsavedMappings)
+            .help(model.profiles.selected.name)
     }
 }
 

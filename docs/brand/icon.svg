@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="FX Relay icon">
-<rect x="58" y="58" width="908" height="908" rx="196" fill="#1f2121" stroke="#494b49" stroke-width="3"/><g fill="#f0ede0"><rect x="272" y="206" width="324" height="404" rx="112"/>
-<rect x="382" y="510" width="104" height="310" rx="34"/></g>
-<rect x="522" y="622" width="64" height="156" rx="24" fill="#f74f1c"/>
-<g fill="#1f2121"><rect x="334" y="290" width="200" height="22" rx="11"/><rect x="334" y="354" width="200" height="22" rx="11"/><rect x="334" y="418" width="200" height="22" rx="11"/><rect x="334" y="482" width="200" height="22" rx="11"/></g>
-<rect x="636" y="497" width="110" height="20" rx="10" fill="#6b6e69"/>
-<circle cx="752" cy="507" r="58" fill="#f74f1c"/>
-<g><rect x="653" y="752" width="20" height="12" rx="5" fill="#575954"/><rect x="653" y="719" width="20" height="12" rx="5" fill="#575954"/><rect x="653" y="686" width="20" height="12" rx="5" fill="#575954"/><rect x="653" y="653" width="20" height="12" rx="5" fill="#f74f1c"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="FX Relay Contact icon"><defs><linearGradient id="tile" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#242724"/><stop offset="1" stop-color="#363b37"/></linearGradient>
+<clipPath id="clip"><rect x="80" y="80" width="864" height="864" rx="190"/></clipPath></defs>
+<g clip-path="url(#clip)"><rect x="80" y="80" width="864" height="864" fill="url(#tile)"/>
+<g stroke="#f1ebd0" stroke-width="46" stroke-linecap="round"><path d="M80 674H310M714 350H944"/></g>
+<path d="M310 674L615 413" stroke="#ff5a1f" stroke-width="58" stroke-linecap="round"/>
+<g fill="#f1ebd0"><circle cx="310" cy="674" r="65"/><circle cx="714" cy="350" r="65"/></g></g>
+<rect x="80" y="80" width="864" height="864" rx="190" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width="2"/></svg>

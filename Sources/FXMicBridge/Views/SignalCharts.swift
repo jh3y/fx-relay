@@ -10,7 +10,7 @@ struct LevelMeter: View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 Capsule().fill(.quaternary)
-                Capsule().fill(peakDB > -1 ? Color.red : Color.accentColor)
+                Capsule().fill(peakDB > -1 ? Color.red : Color.primary.opacity(0.65))
                     .frame(width: geometry.size.width * fraction(rmsDB))
                 Rectangle().fill(.primary.opacity(0.65)).frame(width: 2)
                     .offset(x: max(0, geometry.size.width * fraction(peakDB) - 2))
@@ -46,7 +46,7 @@ struct HistoryChart: View {
                         let position = CGPoint(x: size.width * (1 - (now - point.time) / 10), y: y(peak ? point.peakDB : point.rmsDB))
                         if index == 0 { path.move(to: position) } else { path.addLine(to: position) }
                     }
-                    context.stroke(path, with: .color(peak ? .secondary.opacity(0.5) : .accentColor), lineWidth: peak ? 1 : 1.6)
+                    context.stroke(path, with: .color(peak ? .secondary.opacity(0.5) : .primary), lineWidth: peak ? 1 : 1.6)
                 }
                 var line = Path()
                 line.move(to: CGPoint(x: 0, y: y(threshold)))
@@ -54,7 +54,7 @@ struct HistoryChart: View {
                 context.stroke(line, with: .color(.orange.opacity(0.75)), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
             }
             .frame(height: 100)
-            .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
+            .bridgeWell()
             HStack {
                 Text("−10 s")
                 Spacer()
@@ -91,10 +91,10 @@ struct SpectrumChart: View {
                     let point = CGPoint(x: x(hz), y: size.height * (1 - min(1, max(0, (db + 100) / 100))))
                     if !started { path.move(to: point); started = true } else { path.addLine(to: point) }
                 }
-                context.stroke(path, with: .color(.accentColor), lineWidth: 1.2)
+                context.stroke(path, with: .color(.primary), lineWidth: 1.2)
             }
             .frame(height: 86)
-            .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
+            .bridgeWell()
             HStack {
                 Text("20 Hz")
                 Spacer()

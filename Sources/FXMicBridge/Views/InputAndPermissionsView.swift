@@ -12,7 +12,7 @@ struct InputPicker: View {
                 Text("\(model.selectedDeviceName) (offline)").tag(model.settings.selectedDeviceUID)
             }
             ForEach(model.devices) { device in
-                Text(compact ? String(device.name.prefix(28)) : device.name).tag(device.id)
+                Text(compact && device.name.count > 30 ? String(device.name.prefix(29)) + "…" : device.name).tag(device.id)
             }
         }
         .help(model.selectedDeviceName.isEmpty ? "Choose the input connected to your FX-MIC" : model.selectedDeviceName)

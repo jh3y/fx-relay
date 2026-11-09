@@ -10,14 +10,14 @@ struct SignalMonitorView: View {
             VStack(alignment: .leading, spacing: 18) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Signal Monitor").font(.title2.weight(.semibold))
-                        Text("Observe the FX-MIC. Discover what its controls actually emit.")
+                        Text("Signal Monitor").font(.system(size: 20, weight: .semibold))
+                        Text("Live input levels, control events and diagnostics.")
                             .font(.callout).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Text("v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development")")
                         .font(.system(.caption2, design: .monospaced).weight(.medium))
-                        .padding(6).background(.quaternary, in: Capsule())
+                        .foregroundStyle(.secondary)
                 }
                 HStack {
                     InputPicker(model: model)
@@ -48,7 +48,7 @@ struct SignalMonitorView: View {
             .padding(24)
         }
         .frame(minWidth: 640, minHeight: 560)
-        .tint(BridgeStyle.orange)
+        .bridgeSurface()
         .background(WindowVisibilityObserver(onChange: { source, visible in
             model.readings.setVisible(.monitor, source: source, visible: visible)
         }, onClose: model.monitorClosed))

@@ -8,75 +8,56 @@ struct BankMappingsEditor: View {
     private var index: Int { bank * 4 + selectedSlot }
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .top, spacing: 14) {
-                Text(String(format: "%02d", bank + 1))
-                    .font(.system(size: 34, weight: .light, design: .monospaced)).foregroundStyle(BridgeStyle.orange)
-                VStack(alignment: .leading, spacing: 7) {
-                    BridgeStyle.label("EDITING BANK / HANDLE + SAMPLES")
-                    HStack(spacing: 8) {
-                        TextField("Bank name", text: $configuration.bankNames[bank])
-                            .textFieldStyle(.plain).font(.system(size: 25, weight: .semibold))
-                        Image(systemName: "pencil").font(.caption).foregroundStyle(.tertiary)
-                    }
+            HStack(spacing: 14) {
+                Text(String(format: "%02d", bank + 1)).font(.system(size: 22, weight: .medium, design: .monospaced)).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Editing bank").font(.caption).foregroundStyle(.secondary)
+                    TextField("Bank name", text: $configuration.bankNames[bank])
+                        .textFieldStyle(.plain).font(.system(size: 20, weight: .semibold))
+                        .accessibilityLabel("Bank \(bank + 1) name")
                 }
                 Spacer(minLength: 12)
-                Toggle("Samples", isOn: $configuration.enabledBanks[bank]).toggleStyle(.switch).controlSize(.small)
-                    .fixedSize().help("Disable sample actions only; configure the handle separately")
+                Toggle("Samples enabled", isOn: $configuration.enabledBanks[bank])
+                    .toggleStyle(.switch).controlSize(.small).fixedSize()
+                    .help("Enables sample actions only; the handle is configured separately")
             }
-            Text(bank == 0 ? "No FX light and FX 1 share this bank. Select a sample on the mic, then press PLAY." : "Select FX \(bank + 1) with orange. Select a sample, then press PLAY to fire its action.")
-                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Divider()
             Picker("Configure", selection: Binding(get: { selectedSlot < 0 }, set: { selectedSlot = $0 ? -1 : 0 })) {
-                Text("Samples").tag(false)
-                Text("Handle").tag(true)
-            }.pickerStyle(.segmented).frame(width: 250)
-            if selectedSlot < 0 {
-                BankHandleEditor(configuration: $configuration, bank: bank)
-            } else {
-            HStack(spacing: 10) {
-                ForEach(0..<4) { sample in
-                    Button { selectedSlot = sample } label: {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text(String(format: "%02d", sample + 1)).font(.system(size: 24, weight: .medium, design: .monospaced))
-                                Spacer()
-                                Circle().fill(selectedSlot == sample ? BridgeStyle.orange : Color.secondary.opacity(0.2)).frame(width: 6, height: 6)
-                            }
-                            Text(configuration.tones[bank * 4 + sample].action.label).font(.callout).lineLimit(1)
-                        }.padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(selectedSlot == sample ? BridgeStyle.orange.opacity(0.10) : Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10))
-                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(selectedSlot == sample ? BridgeStyle.orange.opacity(0.65) : Color.primary.opacity(0.06)))
-                            .contentShape(Rectangle())
-                    }.buttonStyle(.plain).accessibilityLabel("Edit sample \(sample + 1)")
-                        .help(configuration.tones[bank * 4 + sample].action.label)
-                }
-            }
-            VStack(alignment: .leading, spacing: 18) {
+                Text("Samples").tag(false); Text("Handle").tag(true)
+            }.pickerStyle(.segmented).frame(width: 240)
+            if selectedSlot < 0 { BankHandleEditor(configuration: $configuration, bank: bank) }
+            else {
+                VStack(spacing: 0) {
+                    ForEach(0..<4) { sample in
+                        Button { selectedSlot = sample } label: {
+                            HStack(spacing: 12) {
+                                Text(String(format: "%02d", sample + 1)).font(.system(size: 12, weight: .medium, design: .monospaced)).frame(width: 24)
+                                Text(configuration.tones[bank * 4 + sample].action.label).lineLimit(1)
+                                Spacer(minLength: 4)
+                                Image(systemName: selectedSlot == sample ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(selectedSlot == sample ? BridgeStyle.orange : Color.secondary.opacity(0.5))
+                            }.padding(.horizontal, 12).padding(.vertical, 10).contentShape(Rectangle())
+                                .background(selectedSlot == sample ? BridgeStyle.selection : Color.clear)
+                        }.buttonStyle(.plain)
+                            .accessibilityLabel("Sample \(sample + 1): \(configuration.tones[bank * 4 + sample].action.label)")
+                            .accessibilityAddTraits(selectedSlot == sample ? [.isSelected] : [])
+                        if sample < 3 { Divider() }
+                    }
+                }.clipShape(RoundedRectangle(cornerRadius: BridgeStyle.radius)).bridgeWell()
                 HStack {
-                    BridgeStyle.label("SAMPLE \(String(format: "%02d", selectedSlot + 1)) / ACTION")
+                    Text("Sample \(selectedSlot + 1)").font(.system(size: 15, weight: .semibold))
                     Spacer()
-                    Text(configuration.enabledBanks[bank] ? "ENABLED" : "PREVIEW ONLY")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundStyle(configuration.enabledBanks[bank] ? BridgeStyle.orange : .secondary)
+                    if !configuration.enabledBanks[bank] { Label("Preview only", systemImage: "speaker.slash").font(.caption).foregroundStyle(.secondary) }
                 }
                 ActionEditor(title: "", action: $configuration.tones[index].action).id(index)
-            }.padding(20).background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 12))
-            DisclosureGroup {
-                HStack {
-                    TextField("Frequency", value: $configuration.tones[index].frequency, format: .number.precision(.fractionLength(0)))
-                        .textFieldStyle(.roundedBorder).frame(width: 100)
-                    Text("Hz · change only for a different cue pack").foregroundStyle(.secondary)
-                }.padding(.top, 8)
-            } label: {
-                HStack {
-                    Text("Cue tuning")
-                    Spacer()
-                    Text("\(Int(configuration.tones[index].frequency)) Hz").font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary)
+                Divider()
+                DisclosureGroup("Cue tuning · \(Int(configuration.tones[index].frequency)) Hz") {
+                    HStack {
+                        TextField("Frequency", value: $configuration.tones[index].frequency, format: .number.precision(.fractionLength(0)))
+                            .textFieldStyle(.roundedBorder).frame(width: 110)
+                        Text("Hz · change only for a different cue pack").font(.caption).foregroundStyle(.secondary)
+                    }.padding(.top, 8)
                 }
-            }.font(.callout)
-            if !configuration.enabledBanks[bank] {
-                Text("This bank is in preview only. Enable Samples above when you want these mappings to fire.")
-                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            }
             }
         }
     }

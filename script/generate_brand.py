@@ -1,34 +1,27 @@
 #!/usr/bin/env python3
-"""Original vector brand assets. No remote fonts, photos or third-party artwork."""
+"""Original Contact vector assets; no presentation backgrounds baked into the app icon."""
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 out = ROOT / 'docs' / 'brand'
 out.mkdir(parents=True, exist_ok=True)
-mark = '''<g fill="#f0ede0"><rect x="272" y="206" width="324" height="404" rx="112"/>
-<rect x="382" y="510" width="104" height="310" rx="34"/></g>
-<rect x="522" y="622" width="64" height="156" rx="24" fill="#f74f1c"/>
-<g fill="#1f2121">''' + ''.join(f'<rect x="334" y="{y}" width="200" height="22" rx="11"/>' for y in (290,354,418,482)) + '''</g>
-<rect x="636" y="497" width="110" height="20" rx="10" fill="#6b6e69"/>
-<circle cx="752" cy="507" r="58" fill="#f74f1c"/>
-<g>''' + ''.join(f'<rect x="653" y="{752-i*33}" width="20" height="12" rx="5" fill="{("#f74f1c" if i == 3 else "#575954")}"/>' for i in range(4)) + '</g>'
-icon = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="FX Relay icon">
-<rect x="58" y="58" width="908" height="908" rx="196" fill="#1f2121" stroke="#494b49" stroke-width="3"/>{mark}</svg>'''
-(out/'icon.svg').write_text(icon+'\n')
-hero=f'''<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="600" viewBox="0 0 1280 600" role="img" aria-labelledby="title desc">
-<title id="title">FX Relay</title><desc id="desc">Physical controls. Programmable actions. A native macOS controller for the EP-2350.</desc>
-<rect width="1280" height="600" rx="24" fill="#ece9df"/>
-<g stroke="#292d2d" stroke-opacity=".09"><path d="M64 92H1216M64 506H1216M800 92V506"/></g>
-<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#292d2d">
-<text x="64" y="62" font-size="13" letter-spacing="2">FX–MIC / CONTROL UTILITY</text>
-<text x="1216" y="62" text-anchor="end" font-size="13" letter-spacing="2">macOS · EP–2350</text>
-<text x="58" y="223" font-size="99" font-weight="700" letter-spacing="-6">FX</text>
-<text x="58" y="328" font-size="99" font-weight="700" letter-spacing="-6">RELAY<tspan fill="#f24b1a">.</tspan></text>
-<text x="64" y="392" font-size="24">Physical controls.</text><text x="64" y="428" font-size="24">Programmable actions.</text>
-<text x="64" y="548" font-size="12" letter-spacing="1.5">FOUR BANKS / SIXTEEN MAPPINGS / YOUR WORKFLOW</text>
-<text x="1216" y="548" text-anchor="end" font-size="12" letter-spacing="1.5">AUDIO → ACTION</text>
-</g>
-<g transform="translate(789 96) scale(.40)"><rect width="1024" height="1024" rx="200" fill="#1f2121"/>{mark}</g>
-</svg>'''
-(out/'hero.svg').write_text(hero+'\n')
-(out/'wordmark.svg').write_text('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100" role="img" aria-label="FX Relay"><rect width="600" height="100" rx="16" fill="#ece9df"/><text x="24" y="64" font-family="ui-monospace,Menlo,monospace" font-size="44" font-weight="700" fill="#292d2d">FX RELAY</text><circle cx="570" cy="50" r="9" fill="#f24b1a"/></svg>\n''')
-print('Wrote docs/brand/{icon,hero,wordmark}.svg')
+art = '''<defs><linearGradient id="tile" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#242724"/><stop offset="1" stop-color="#363b37"/></linearGradient>
+<clipPath id="clip"><rect x="80" y="80" width="864" height="864" rx="190"/></clipPath></defs>
+<g clip-path="url(#clip)"><rect x="80" y="80" width="864" height="864" fill="url(#tile)"/>
+<g stroke="#f1ebd0" stroke-width="46" stroke-linecap="round"><path d="M80 674H310M714 350H944"/></g>
+<path d="M310 674L615 413" stroke="#ff5a1f" stroke-width="58" stroke-linecap="round"/>
+<g fill="#f1ebd0"><circle cx="310" cy="674" r="65"/><circle cx="714" cy="350" r="65"/></g></g>
+<rect x="80" y="80" width="864" height="864" rx="190" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width="2"/>'''
+(out/'icon.svg').write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="FX Relay Contact icon">{art}</svg>\n')
+(out/'contact-symbol.svg').write_text('''<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"><path d="M1 12h2m10-8h2M5.6 10.7l3.55-3.55"/><circle cx="4.5" cy="12" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/></g></svg>\n''')
+(out/'hero.svg').write_text(f'''<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="520" viewBox="0 0 1280 520" role="img" aria-labelledby="title desc">
+<title id="title">FX Relay</title><desc id="desc">Native macOS control for the Teenage Engineering EP-2350 FX-MIC.</desc>
+<rect width="1280" height="520" rx="20" fill="#f5f3ec"/>
+<path d="M64 92H1216M64 432H1216" stroke="#292b28" stroke-opacity=".15"/>
+<g fill="#292b28" font-family="-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif">
+<text x="64" y="66" font-family="ui-monospace,Menlo,monospace" font-size="14" letter-spacing="1">EP–2350 → macOS</text>
+<text x="60" y="242" font-size="92" font-weight="600" letter-spacing="-4">FX Relay</text>
+<text x="66" y="300" font-size="23">Native macOS control for the FX-MIC.</text>
+<text x="64" y="474" font-family="ui-monospace,Menlo,monospace" font-size="13">FOUR BANKS / SIXTEEN SAMPLES / EDITABLE PROFILES</text>
+</g><g transform="translate(806 68) scale(.36)">{art}</g></svg>\n''')
+(out/'wordmark.svg').write_text('''<svg xmlns="http://www.w3.org/2000/svg" width="440" height="100" viewBox="0 0 440 100" role="img" aria-label="FX Relay"><rect width="440" height="100" rx="12" fill="#f5f3ec"/><g transform="translate(22 22) scale(3.5)" stroke="#292b28" fill="none" stroke-width="1.65" stroke-linecap="round"><path d="M1 12h2m10-8h2"/><circle cx="4.5" cy="12" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/><path d="M5.6 10.7l3.55-3.55" stroke="#ff5a1f"/></g><text x="108" y="66" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="44" font-weight="600" fill="#292b28">FX Relay</text></svg>\n''')
+print('Wrote Contact brand SVGs')

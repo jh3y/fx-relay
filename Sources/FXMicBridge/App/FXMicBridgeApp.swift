@@ -20,9 +20,9 @@ struct FXMicBridgeApp: App {
         Window("FX Relay — Mappings", id: "mappings") {
             MappingWindowView(model: model)
         }
-        .defaultSize(width: 1020, height: 740)
+        .defaultSize(width: 1000, height: 760)
         .windowResizability(.contentMinSize)
-        .defaultLaunchBehavior(.suppressed)
+        .defaultLaunchBehavior(CommandLine.arguments.contains("--show-mappings") ? .presented : .suppressed)
 
         Window("FX Relay — Setup", id: "setup") {
             SetupWindowView(model: model)

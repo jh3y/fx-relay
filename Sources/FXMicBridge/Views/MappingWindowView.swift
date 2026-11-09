@@ -4,7 +4,7 @@ import SwiftUI
 struct MappingWindowView: View {
     let model: BridgeModel
     @State private var draft = BridgeConfiguration()
-    @State private var page = 0
+    @State private var page: Int? = 0
     @State private var slot = 0
     @Environment(\.openWindow) private var openWindow
     private var dirty: Bool { draft != model.bridgeConfiguration }
@@ -17,112 +17,93 @@ struct MappingWindowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                BridgeBrand()
-                Spacer(minLength: 30)
-                ProfileControlsView(model: model).frame(width: 310)
-            }.padding(22)
-            Divider()
-            HStack(spacing: 0) {
-                GeometryReader { geometry in
-                    ScrollView {
-                        sidebar.frame(minHeight: geometry.size.height, alignment: .top)
+            HSplitView {
+                List(selection: $page) {
+                    Section("Banks") {
+                        ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
+                            HStack(spacing: 9) {
+                                Text(String(format: "%02d", bank + 1)).font(.system(size: 11, weight: .medium, design: .monospaced))
+                                    .foregroundStyle(.secondary).frame(width: 22)
+                                Text(draft.bankNames[bank]).lineLimit(1)
+                                Spacer(minLength: 0)
+                                if !draft.enabledBanks[bank] { Image(systemName: "speaker.slash").font(.caption2).help("Sample actions disabled") }
+                            }.padding(.vertical, 4).tag(bank)
+                                .help(draft.bankNames[bank] + " · edit only")
+                        }
                     }
-                }.frame(width: 180)
-                Divider()
+                    Section("Configuration") {
+                        Label("Handle Banks", systemImage: "hand.draw").tag(-1)
+                        Label("Detection", systemImage: "slider.horizontal.3").tag(-2)
+                        Label("Mic & Workflows", systemImage: "wrench.and.screwdriver").tag(-3)
+                    }
+                }.listStyle(.sidebar)
+                    .frame(minWidth: 180, idealWidth: 210, maxWidth: 270)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
-                        if page >= 0 {
-                            if let name = model.profiles.selected.template, let template = ProfileTemplate(rawValue: name) {
-                                Label(template.summary, systemImage: "info.circle")
-                                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                            }
+                        if let page, page >= 0 {
                             BankMappingsEditor(configuration: $draft, bank: page, selectedSlot: $slot)
                                 .id(model.profiles.library.selectedID)
-                        } else if page == -1 {
-                            BridgeStyle.label("HANDLE / BANK MAPPINGS")
-                            Text("A handle action for each bank").font(.title.weight(.semibold))
-                            Text("Profiles save all four banks. The active handle mapping follows the last played sample, or a bank you select explicitly. Orange alone does not identify the selected bank.")
-                                .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                            ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        Text(draft.bankNames[bank]).font(.headline)
-                                        Text(draft.handleActions[bank].label).foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    Button("Edit handle") { page = bank; slot = -1 }
-                                }.padding(14).background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 8))
+                            if let name = model.profiles.selected.template, let template = ProfileTemplate(rawValue: name) {
+                                DisclosureGroup("Workflow guidance") {
+                                    Text(template.summary).font(.callout).foregroundStyle(.secondary).padding(.top, 8)
+                                }
                             }
-                            Text("Sound detection always runs. None means no keyboard action in that bank. Quiet pauses can release a held key; silence is not a physical handle-position sensor.")
-                                .font(.callout).foregroundStyle(.secondary)
-                        } else if page == -2 {
-                            DetectionSettingsView(configuration: $draft)
-                        } else {
-                            HardwareSetupView(model: model)
-                        }
+                        } else if page == -1 { handleOverview }
+                        else if page == -2 { DetectionSettingsView(configuration: $draft) }
+                        else { HardwareSetupView(model: model) }
                         if let error = model.profiles.error { Text(error).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true) }
-                    }.padding(26).frame(maxWidth: .infinity, alignment: .leading)
-                }.frame(maxWidth: .infinity, maxHeight: .infinity)
-            }.frame(maxHeight: .infinity)
+                    }.padding(24).frame(maxWidth: 780, alignment: .leading).frame(maxWidth: .infinity, alignment: .topLeading)
+                }.frame(minWidth: 590, maxWidth: .infinity, maxHeight: .infinity)
+            }
             Divider()
-            HStack(spacing: 12) {
-                Circle().fill(dirty ? BridgeStyle.orange : Color.secondary.opacity(0.45)).frame(width: 6, height: 6)
-                Text(dirty ? "Unsaved changes · apply to resume" : "Saved locally · \(model.readiness.title)").font(.caption).foregroundStyle(.secondary)
-                Spacer()
+            HStack(spacing: 10) {
+                Label(dirty ? "Unsaved changes · output suspended" : "Saved", systemImage: dirty ? "pencil.circle" : "checkmark.circle")
+                    .font(.caption).foregroundStyle(.secondary)
+                Spacer(minLength: 12)
                 Button("Revert") { draft = model.bridgeConfiguration }.disabled(!dirty)
                 Button("Apply Changes") { model.applyBridgeConfiguration(draft) }
-                    .buttonStyle(.borderedProminent).tint(BridgeStyle.orange)
-                    .disabled(!dirty || model.diagnostics.isRecording).keyboardShortcut("s", modifiers: .command)
-            }.padding(.horizontal, 22).padding(.vertical, 14)
-        }
-        .frame(minWidth: 860, minHeight: 560)
-        .tint(BridgeStyle.orange)
-        .onAppear { draft = model.bridgeConfiguration }
-        .onChange(of: model.bridgeConfiguration) { _, value in draft = value }
-        .onChange(of: draft) { _, value in
-            model.hasUnsavedMappings = value != model.bridgeConfiguration
-        }
-        .background(WindowVisibilityObserver(onChange: { _, _ in }, onClose: {
-            draft = model.bridgeConfiguration; model.hasUnsavedMappings = false
-        }))
-    }
-
-    private var sidebar: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            BridgeStyle.label("BANKS").padding(.bottom, 6)
-            ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
-                Button { page = bank; if slot >= 0 { slot = 0 } } label: {
-                    HStack(spacing: 9) {
-                        Text(String(format: "%02d", bank + 1)).font(.system(.caption, design: .monospaced))
-                            .foregroundStyle(page == bank ? BridgeStyle.orange : Color.secondary)
-                        Text(draft.bankNames[bank]).lineLimit(1)
-                        Spacer(minLength: 0)
-                        if !draft.enabledBanks[bank] { Circle().stroke(.secondary, lineWidth: 1).frame(width: 5, height: 5) }
-                    }.padding(.horizontal, 10).padding(.vertical, 10)
-                        .background(page == bank ? BridgeStyle.orange.opacity(0.10) : .clear, in: RoundedRectangle(cornerRadius: 6))
-                        .contentShape(Rectangle())
-                }.buttonStyle(.plain)
+                    .buttonStyle(.borderedProminent).disabled(!dirty || model.diagnostics.isRecording)
+                    .keyboardShortcut("s", modifiers: .command)
+            }.padding(.horizontal, 20).padding(.vertical, 12)
+        }.frame(minWidth: 820, minHeight: 560).bridgeSurface()
+            .toolbar {
+                ToolbarItem(placement: .navigation) { ContactSymbol().frame(width: 20, height: 20) }
+                ToolbarItem(placement: .principal) { ProfileControlsView(model: model).frame(width: 300) }
+                ToolbarItem(placement: .automatic) {
+                    Menu {
+                        Button("Setup…") { openWindow(id: "setup") }
+                        Button("Bank Reference") { openWindow(id: "cheat-sheet") }
+                        Button("Signal Monitor") { openWindow(id: "signal-monitor") }
+                    } label: { Label("Tools", systemImage: "ellipsis.circle") }
+                    .help("Setup, bank reference and diagnostics")
+                }
             }
-            Divider().padding(.vertical, 10)
-            navigation("Handle banks", icon: "hand.draw", page: -1)
-            navigation("Detection", icon: "slider.horizontal.3", page: -2)
-            navigation("Mic & Workflows", icon: "wrench.and.screwdriver", page: -3)
-            Spacer(minLength: 24)
-            Button("Bank Reference") { openWindow(id: "cheat-sheet") }.buttonStyle(.link)
-            Button("Setup…") { openWindow(id: "setup") }.buttonStyle(.link)
-            Button("Signal Monitor") { openWindow(id: "signal-monitor") }.buttonStyle(.link)
-            Text("FX → BANK\nSAMPLE → SLOT\nPLAY → ACTION")
-                .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineSpacing(4)
-                .fixedSize(horizontal: false, vertical: true)
-            Text("FX RELAY / 0.7").font(.system(size: 9, design: .monospaced)).tracking(1.2).foregroundStyle(.tertiary)
-        }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
+            .onAppear { draft = model.bridgeConfiguration }
+            .onChange(of: model.bridgeConfiguration) { _, value in draft = value }
+            .onChange(of: draft) { _, value in model.hasUnsavedMappings = value != model.bridgeConfiguration }
+            .background(WindowVisibilityObserver(onChange: { _, _ in }, onClose: {
+                draft = model.bridgeConfiguration; model.hasUnsavedMappings = false
+            }))
     }
-    private func navigation(_ title: String, icon: String, page value: Int) -> some View {
-        Button { page = value } label: {
-            Label(title, systemImage: icon).font(.callout).frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 7).foregroundStyle(page == value ? BridgeStyle.orange : Color.primary)
-                .contentShape(Rectangle())
-        }.buttonStyle(.plain)
+    private var handleOverview: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            BridgePageHeading(title: "Handle Banks", detail: "Each bank has its own handle action. Editing a bank does not activate it.")
+            ForEach(0..<BridgeConfiguration.bankCount, id: \.self) { bank in
+                HStack(spacing: 14) {
+                    Text(String(format: "%02d", bank + 1)).font(.system(size: 15, design: .monospaced)).foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(draft.bankNames[bank]).fontWeight(.medium).lineLimit(1)
+                        Text(draft.handleActions[bank].label).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button("Edit…") { page = bank; slot = -1 }
+                }.padding(.vertical, 9)
+                Divider()
+            }
+            DisclosureGroup("How banks follow the mic") {
+                Text("Play a sample after changing FX to identify the bank, or choose Current bank in the menu bar. Orange alone is silent. An unassigned sample can identify a bank without firing an action. Quiet pauses can release a key; silence does not reveal physical handle position.")
+                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true).padding(.top, 8)
+            }
+        }
     }
 }

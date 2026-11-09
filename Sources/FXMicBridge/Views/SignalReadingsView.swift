@@ -45,7 +45,7 @@ struct SignalReadingsView: View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
                 Text("Signal threshold").font(.callout)
-                Slider(value: Binding(get: { model.settings.thresholdDB }, set: model.setThreshold), in: -100 ... -6, step: 0.5) { editing in
+                Slider(value: Binding(get: { model.settings.thresholdDB }, set: { model.setThreshold(($0 * 2).rounded() / 2) }), in: -100 ... -6) { editing in
                     if !editing { model.thresholdEditingEnded() }
                 }
                 .accessibilityLabel("Signal threshold")

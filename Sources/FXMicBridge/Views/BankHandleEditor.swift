@@ -10,13 +10,15 @@ struct BankHandleEditor: View {
             ActionEditor(title: "", action: $configuration.handleActions[bank]).id(bank)
             Text("This mapping applies only to this bank. Choose None to use the handle as a physical mic gate without sending keys.")
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            Text("After changing FX on the mic, play a sample to identify the bank. A sample mapped to None can select a bank without firing a macro. You can also select the handle bank explicitly in the menu bar.")
-                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            DisclosureGroup("How the handle follows a bank") {
+                Text("After changing FX, play a sample to identify its bank. An unassigned sample selects without a macro. You can also select Current bank explicitly in the menu bar. Editing this bank does not activate it.")
+                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true).padding(.top, 8)
+            }
             if configuration.handleActions[bank].kind == .holdKey && configuration.handleActions[bank].chord.keyCode == 49 {
                 Label("Claude Code's terminal hold mode expects repeats. Choose Hold Key — Continuous for that workflow; ordinary Hold Key sends just one down/up pair.", systemImage: "info.circle")
                     .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
-        }.padding(20).background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 12))
+        }
     }
 }
 

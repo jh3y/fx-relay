@@ -35,7 +35,7 @@ struct EventLogView: View {
                     .padding(10)
                 }
                 .frame(height: 130)
-                .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
+                .bridgeWell()
                 .onChange(of: model.events.last?.id) { _, id in
                     if follow, let id { proxy.scrollTo(id, anchor: .bottom) }
                 }

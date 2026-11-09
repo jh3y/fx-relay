@@ -19,10 +19,10 @@ struct ActionEditor: View {
                 Text("Type Text").tag(BridgeAction.Kind.typeText)
             }.pickerStyle(.menu)
             if action.kind != .none && action.kind != .typeText {
-                Text(action.chord.label).font(.system(size: 32, weight: .medium, design: .monospaced))
-                    .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
-                    .padding(.horizontal, 16).background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                HStack {
+                HStack(spacing: 10) {
+                    Text(action.chord.label).font(.system(size: 16, weight: .medium, design: .monospaced))
+                        .lineLimit(1).padding(.horizontal, 14).frame(minWidth: 90, minHeight: 36)
+                        .bridgeWell().help(action.chord.label)
                     Menu("Choose key") {
                         ForEach(KeyChord.presets.indices, id: \.self) { index in
                             Button(KeyChord.presets[index].label) { action.chord = KeyChord.presets[index] }
@@ -45,14 +45,14 @@ struct ActionEditor: View {
                     }
                     if action.delivery == .systemShortcut {
                         Text(action.chord.modifierKey != nil
-                             ? "Sends modifier changes to macOS and global shortcut listeners. Match the key in your dictation app. Focus changes and Pause release the modifier."
-                             : "For shortcuts handled by macOS or a global dictation app. Match its configured shortcut. Focus changes and Pause release held keys.")
+                             ? "Match this modifier in your dictation app. Focus changes and Pause release it."
+                             : "Match the shortcut in macOS or your dictation app. Focus changes and Pause release held keys.")
                             .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
             if action.kind == .typeText {
-                TextField("Text to type, e.g. /voice", text: $action.text).textFieldStyle(.roundedBorder).controlSize(.large)
+                TextField("Text to type, e.g. /voice", text: $action.text).textFieldStyle(.roundedBorder).controlSize(.regular)
                 Toggle("Press Enter afterward", isOn: $action.pressEnter).toggleStyle(.checkbox)
                 if action.pressEnter {
                     HStack {
@@ -66,10 +66,10 @@ struct ActionEditor: View {
                 Text("Recognize the input without sending any keys.").foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             } else if action.kind == .holdKey {
                 Text(action.chord.modifierKey != nil
-                     ? "One modifier press, then release when the sound gate ends. Other bridge key actions are skipped while it is held. A silent squeeze alone is not detected."
+                     ? "One press and release, following sound. A silent squeeze alone is not detected; other bridge keys are skipped while held."
                      : "One key down, then one key up when the signal ends. No repeated key presses.").font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             } else if action.kind == .holdKeyContinuous {
-                Text("One key down, continuous key-repeat events while active, then one key up. Use Space with Claude Code’s /voice hold. Repeats continue through the configured release delay; ordinary text fields will receive repeated characters.")
+                Text("Repeats while active, then releases. Use Space for Claude’s /voice hold. Repeats continue through the release delay and type repeated characters in text fields.")
                     .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -84,7 +84,7 @@ private struct ShortcutRecorder: View {
     @Binding var chord: KeyChord
     @State private var monitor: Any?
     var body: some View {
-        Button(monitor == nil ? "Record…" : "Press keys · Cancel") {
+        Button(monitor == nil ? "Record Shortcut…" : "Press keys · Cancel") {
             if monitor != nil { stop(); return }
             monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 guard event.keyCode <= 127, ![54, 55, 56, 57, 58, 59, 60, 61, 62, 63].contains(event.keyCode) else { return nil }

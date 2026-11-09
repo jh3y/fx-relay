@@ -7,7 +7,7 @@ struct BankReferenceView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center) {
-                BridgeBrand(compact: true)
+                Text("Bank Reference").font(.system(size: 18, weight: .semibold))
                 Spacer()
                 Toggle(isOn: Binding(get: { model.utilityPreferences.keepCheatSheetOnTop },
                                      set: { model.utilityPreferences.keepCheatSheetOnTop = $0 })) {
@@ -35,7 +35,7 @@ struct BankReferenceView: View {
                     "Bank follows the last sample. Orange alone does not update this view.")
                 .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }.padding(20).frame(minWidth: 580, idealWidth: 620)
-            .tint(BridgeStyle.orange)
+            .bridgeSurface()
     }
 
     private func bankCard(_ bank: Int) -> some View {
@@ -48,7 +48,7 @@ struct BankReferenceView: View {
                     .help(model.bridgeConfiguration.bankNames[bank])
                 Spacer(minLength: 0)
                 if !enabled { Text("OFF").font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary) }
-                else if current { Circle().fill(BridgeStyle.orange).frame(width: 6, height: 6).accessibilityLabel("Current bank") }
+                else if current { Image(systemName: "checkmark.circle.fill").foregroundStyle(BridgeStyle.orange).accessibilityLabel("Current bank") }
             }
             HStack(spacing: 6) {
                 Image(systemName: "hand.draw").foregroundStyle(current && model.detectedPTT ? BridgeStyle.orange : Color.secondary)
@@ -58,7 +58,7 @@ struct BankReferenceView: View {
             Divider()
             ForEach(0..<4) { slot in ControlReferenceRow(model: model, index: bank * 4 + slot) }
         }.padding(13).frame(maxWidth: .infinity, alignment: .leading)
-            .background(current ? BridgeStyle.orange.opacity(0.04) : Color.primary.opacity(0.025), in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(current ? BridgeStyle.orange.opacity(0.6) : Color.primary.opacity(0.09)))
+            .background(BridgeStyle.well, in: RoundedRectangle(cornerRadius: BridgeStyle.radius))
+            .overlay(RoundedRectangle(cornerRadius: BridgeStyle.radius).strokeBorder(current ? BridgeStyle.orange.opacity(0.6) : Color.primary.opacity(0.09)))
     }
 }

@@ -200,6 +200,7 @@ final class BridgeModel {
     }
 
     private func reconcileOutput() {
+        #if !FXRELAY_PREVIEW // Screenshot builds cannot touch capture, permissions or output.
         let reason: String?
         if !monitoringEnabled { reason = "Paused" }
         else if sleeping { reason = "Mac sleeping or session locked" }
@@ -210,6 +211,7 @@ final class BridgeModel {
         else if micSetup.busy { reason = "Installing mic cue pack" }
         else { reason = nil }
         actions.setAvailability(blockedBy: reason)
+        #endif
     }
 
     func exportBridgeCheck() {
@@ -287,6 +289,7 @@ final class BridgeModel {
     func refreshDevices() { deviceManager.refresh() }
 
     func refreshPermissions() {
+        #if !FXRELAY_PREVIEW // Screenshot builds cannot touch capture, permissions or output.
         let oldMicrophone = permissions.microphone
         let oldAccessibility = permissions.accessibility
         permissions.refresh()
@@ -300,6 +303,7 @@ final class BridgeModel {
             else { reconcileCapture() }
         }
         reconcileOutput()
+        #endif
     }
 
     func receiveTestEvent(isDown: Bool) {
@@ -372,6 +376,7 @@ final class BridgeModel {
     }
 
     private func reconcileCapture() {
+        #if !FXRELAY_PREVIEW // Screenshot builds cannot touch capture, permissions or output.
         guard monitoringEnabled, !sleeping, !isRunning, !isStarting,
               permissions.microphone == .authorized, let device = selectedDevice else { return }
         errorMessage = nil
@@ -449,6 +454,7 @@ final class BridgeModel {
                     self.errorMessage = message
                 }
             })
+        #endif
     }
 
     private func stopCapture(reason: String, preservingHandleBank: Bool = false) {
@@ -488,3 +494,23 @@ private struct BridgeCheckFrame: Encodable {
     let sampleRate: Double
     let analyzedChannel: Int
 }
+
+#if FXRELAY_PREVIEW
+/// Compiled only into the isolated screenshot executable, never the app bundle.
+extension BridgeModel {
+    func prepareVisualPreview(state: BridgeReadiness = .ready, longNames: Bool = false, unknownBank: Bool = false) {
+        permissions.prepareVisualPreview(microphone: state != .microphonePermission, accessibility: state != .accessibilityPermission)
+        settings.selectedDeviceUID = state == .chooseInput ? "" : "preview-input"
+        settings.selectedDeviceName = longNames ? "CalDigit Thunderbolt Audio — External Microphone Interface" : "CalDigit Thunderbolt Audio"
+        devices = state == .disconnected || state == .chooseInput ? [] : [AudioInputDevice(id: "preview-input", objectID: 0, name: settings.selectedDeviceName, channelCount: 2)]
+        monitoringEnabled = state != .paused
+        isRunning = [.ready, .unsavedMappings].contains(state)
+        isStarting = state == .connecting
+        errorMessage = state == .captureError ? "The selected audio input stopped responding. Reconnect the adapter, then select it again." : nil
+        hasUnsavedMappings = state == .unsavedMappings
+        handleBank = unknownBank ? nil : 0
+        handleBankSource = unknownBank ? nil : .startup
+        signalPresent = false
+    }
+}
+#endif

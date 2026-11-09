@@ -5,9 +5,7 @@ struct DetectionSettingsView: View {
     @Binding var configuration: BridgeConfiguration
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            BridgeStyle.label("ADVANCED / SIGNAL ANALYSIS")
-            Text("Detection").font(.title.weight(.semibold))
-            Text("These settings affect recognition, not the mic's audio sent to other apps.").foregroundStyle(.secondary)
+            BridgePageHeading(title: "Detection", detail: "Tune control recognition. Your other apps still receive the original mic audio.")
             GroupBox("Sound-based PTT") {
                 VStack(spacing: 16) {
                     parameter("Activation", value: $configuration.activationDB, range: -90 ... -10, suffix: "dBFS")
@@ -31,15 +29,23 @@ struct DetectionSettingsView: View {
     private func parameter(_ name: String, value: Binding<Double>, range: ClosedRange<Double>, suffix: String) -> some View {
         HStack {
             Text(name).frame(width: 120, alignment: .leading)
-            Slider(value: value, in: range, step: 1)
+            Slider(value: quantized(value, in: range, step: 1), in: range).accessibilityLabel(name)
             Text("\(Int(value.wrappedValue)) \(suffix)").font(.system(.caption, design: .monospaced)).frame(width: 80, alignment: .trailing)
         }
     }
     private func seconds(_ name: String, value: Binding<Double>, range: ClosedRange<Double>) -> some View {
         HStack {
             Text(name).frame(width: 120, alignment: .leading)
-            Slider(value: value, in: range, step: 0.01)
+            Slider(value: quantized(value, in: range, step: 0.01), in: range).accessibilityLabel(name)
             Text("\(Int((value.wrappedValue * 1000).rounded())) ms").font(.system(.caption, design: .monospaced)).frame(width: 80, alignment: .trailing)
         }
     }
+    // Preserve the existing value increments without hundreds of native tick marks.
+    private func quantized(_ value: Binding<Double>, in range: ClosedRange<Double>, step: Double) -> Binding<Double> {
+        Binding(get: { value.wrappedValue }, set: { proposed in
+            let snapped = range.lowerBound + ((proposed - range.lowerBound) / step).rounded() * step
+            value.wrappedValue = min(range.upperBound, max(range.lowerBound, snapped))
+        })
+    }
+
 }

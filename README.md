@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/brand/hero.svg" alt="FX Relay — Physical controls. Programmable actions." width="100%"></p>
+<p align="center"><img src="docs/brand/hero.svg" alt="FX Relay — native macOS control for the FX-MIC" width="100%"></p>
 
 A small native macOS utility that turns the **Teenage Engineering EP-2350 FX-MIC** into a configurable controller for your apps.
 
@@ -10,9 +10,9 @@ Squeeze the handle to gate your microphone. Play a sample to send a key, shortcu
 
 [Get started](docs/GETTING_STARTED.md) · [Profiles](docs/PROFILES.md) · [Dictation options](docs/VOICE_OPTIONS.md) · [Managed Macs / CLI](docs/MANAGED_MACS.md) · [Build](docs/DEVELOPMENT.md) · [Progress](docs/HISTORY.md)
 
-<img src="docs/previews/v0.7.0/bank-handle.png" alt="Mapping editor with a separate handle action for each FX bank" width="100%">
+<img src="docs/previews/v0.8.0/menu-light.png" alt="FX Relay Contact popover in light mode" width="38%"> <img src="docs/previews/v0.8.0/menu-dark.png" alt="FX Relay Contact popover in dark mode" width="38%">
 
-*Actual SwiftUI view rendered offscreen with the Agent Banks starter profile. This image demonstrates the layout, not a live hardware test.*
+*Actual SwiftUI views rendered offscreen with an isolated Agent Banks fixture. Light and dark appearance follow macOS. These images demonstrate layout, not a live hardware test.*
 
 ## A mic with something extra
 
@@ -22,7 +22,7 @@ Squeeze the handle to gate your microphone. Play a sample to send a key, shortcu
 - **Starter workflows.** Codex, Claude Code · Tap, Apple Dictation and Agent Banks are included. Duplicate, rename, edit and share profiles as JSON.
 - **See what the mic is doing.** Live RMS/peak, amplitude history, spectrum, cue counters and event logs. Diagnostic exports contain measurements, not audio recordings.
 - **Ready when your app is.** Output follows the focused app automatically. One Pause/Resume control lives in the menu bar; there is no enable countdown.
-- **A small macOS utility.** Custom menu-bar status mark, light/dark UI, explicit input selection and background analysis. No account or package dependencies.
+- **A small macOS utility.** Contact icon and menu-bar status symbol, adaptive light/dark materials, explicit input selection and background analysis. No account or package dependencies.
 - **Setup you can follow.** Guided permissions, live input checks, optional cue installation and workflow selection. Ready means capture and keyboard permissions are available.
 - **Keep your controls in view.** A compact four-bank reference, optional Keep on Top, brief detection highlights and opt-in Launch at Login.
 

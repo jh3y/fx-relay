@@ -20,6 +20,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.7.0 | Guided setup, honest capture/permission readiness, four-bank reference, Launch at Login, refined branding and stable local signing |
 | 0.7.1 | Standalone modifier holds and system delivery for handle actions, including Option for external dictation apps |
 | 0.7.2 | Clear the bridge's own echoed modifier state on release; add native normal/timeout/next-hold verification |
+| 0.8.0 | Contact identity, compact adaptive popover, native sidebar/toolbar editor and coherent light/dark utility surfaces |
 
 ## The interface, then and now
 
@@ -55,3 +56,16 @@ v0.7 adds a separate reference window and guided setup. The underlying detector 
 ## Public source
 
 On November 4, 2026, FX Relay was published as [jh3y/fx-relay](https://github.com/jh3y/fx-relay) under the MIT license. [tink-agent](https://github.com/tajchert/tink-agent), by Michal Tajchert, was the starting point that made this project possible; its reference contribution and license are preserved in the acknowledgements. The first public source is v0.5.0, with the earlier milestones retained in this history and the local immutable archives.
+
+
+## Contact appearance
+
+v0.8.0 replaces the repeated brand headers and nested cards with an original relay-contact identity, a compact operating panel and a native sidebar editor. The normal popover measures 380 × 555 points. The same semantic colors and spacing extend through Setup, Detection, Bank Reference and Signal Monitor. Editing and active microphone banks remain separate; saved actions and signal detection retain their earlier behavior.
+
+<img src="previews/v0.8.0/menu-light.png" alt="Contact popover in light mode, rendered offscreen" width="38%"> <img src="previews/v0.8.0/menu-dark.png" alt="Contact popover in dark mode, rendered offscreen" width="38%">
+
+These are native view renders with isolated fixture data. They do not show the live hardware state or native window toolbar.
+
+Before (v0.7.2) and after (v0.8.0), using the Agent Banks handle editor:
+
+<img src="previews/v0.8.0/before-handle-v0.7.2.png" alt="Previous handle editor, offscreen render" width="49%"> <img src="previews/v0.8.0/handle-light.png" alt="Contact handle editor content, offscreen render; profile controls are now in the native toolbar" width="49%">
