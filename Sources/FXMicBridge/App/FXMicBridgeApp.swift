@@ -62,6 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.applicationIconImage = NSImage(contentsOf: icon)
         }
         configureTerminationSignals()
+        if ModifierReleaseCheck.runIfRequested() { return }
         if TerminalDeliveryCheck.runIfRequested() { return }
         BridgeModel.shared.start()
         if !BridgeModel.shared.utilityPreferences.introductionDismissed {
@@ -89,6 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationWillTerminate(_ notification: Notification) {
+        ModifierReleaseCheck.cancel()
         TerminalDeliveryCheck.cancel()
         BridgeModel.shared.shutdown()
         if let eventMonitor { NSEvent.removeMonitor(eventMonitor) }

@@ -3,11 +3,26 @@ import XCTest
 @testable import FXMicCore
 
 final class ModifierHoldTests: XCTestCase {
+    func testReleaseClearsItsOwnModifierFromEchoedSystemState() {
+        for modifier in ModifierKey.allCases {
+            var state: CGEventFlags = []
+            var events: [CGEvent] = []
+            let sink = QuartzChordSink(pid: 0, chord: modifier.chord, systemShortcut: true,
+                                      currentFlags: { state }, post: {
+                events.append($0.copy()!)
+                state = $0.flags // The OS state query can reflect our posted press.
+            })
+            XCTAssertTrue(sink.prepare()); sink.keyDown(); sink.keyUp()
+            XCTAssertEqual(events.map(\.flags), [modifier.flags, []])
+            XCTAssertFalse(state.contains(modifier.flag))
+        }
+    }
+
     func testStandaloneModifiersProduceFlagTransitionsWithoutRepeats() {
         for modifier in ModifierKey.allCases {
             var events: [CGEvent] = []
             let sink = QuartzChordSink(pid: 0, chord: modifier.chord, systemShortcut: true,
-                                      hardwareFlags: { [] }, post: { events.append($0.copy()!) })
+                                      currentFlags: { [] }, post: { events.append($0.copy()!) })
             XCTAssertTrue(sink.prepare())
             sink.keyDown(); sink.keyRepeat(); sink.keyRepeat(); sink.keyUp()
             XCTAssertEqual(events.map(\.type), [.flagsChanged, .flagsChanged])
@@ -17,11 +32,11 @@ final class ModifierHoldTests: XCTestCase {
         }
     }
 
-    func testReleasePreservesPhysicalKeysPressedDuringTheHold() {
+    func testReleasePreservesOppositeSideAndUnrelatedModifiers() {
         var physical: CGEventFlags = .maskShift
         var events: [CGEvent] = []
         let sink = QuartzChordSink(pid: 0, chord: ModifierKey.option.chord, systemShortcut: true,
-                                  hardwareFlags: { physical }, post: { events.append($0.copy()!) })
+                                  currentFlags: { physical }, post: { events.append($0.copy()!) })
         XCTAssertTrue(sink.prepare()); sink.keyDown()
         XCTAssertEqual(events.first?.flags, ModifierKey.option.flags.union(.maskShift))
         physical = ModifierKey.rightOption.flags.union(.maskControl)
@@ -30,12 +45,21 @@ final class ModifierHoldTests: XCTestCase {
         XCTAssertEqual((events.last?.flags.rawValue ?? 0) & 0x20, 0) // left Option is no longer ours
     }
 
+    func testEchoedOwnSideIsRemovedWhenOppositeSideIsAlsoDown() {
+        for modifier in ModifierKey.allCases {
+            let opposite = ModifierKey.allCases.first { $0 != modifier && $0.flag == modifier.flag }!
+            let current = modifier.flags.union(opposite.flags).union(.maskAlphaShift)
+            XCTAssertEqual(modifier.releasing(from: current), opposite.flags.union(.maskAlphaShift))
+            XCTAssertEqual(modifier.releasing(from: modifier.flag), [])
+        }
+    }
+
     func testAlreadyPressedModifierAndUnsupportedChordNeverPost() {
         for (chord, physical) in [(ModifierKey.option.chord, CGEventFlags.maskAlternate),
                                  (KeyChord(58, modifiers: 8, label: "Invalid"), CGEventFlags())] {
             var count = 0
             let sink = QuartzChordSink(pid: 0, chord: chord, systemShortcut: true,
-                                      hardwareFlags: { physical }, post: { _ in count += 1 })
+                                      currentFlags: { physical }, post: { _ in count += 1 })
             XCTAssertFalse(sink.prepare())
             sink.keyDown(); sink.keyRepeat(); sink.keyUp()
             XCTAssertEqual(count, 0)

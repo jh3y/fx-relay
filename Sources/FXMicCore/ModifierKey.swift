@@ -43,4 +43,16 @@ public enum ModifierKey: UInt16, CaseIterable, Sendable {
         }
         return flag.union(CGEventFlags(rawValue: device))
     }
+
+    /// Global state can echo our own synthetic press. A release must explicitly
+    /// remove the side we own, retaining the shared flag only for the other side.
+    /// Same-side physical and synthetic presses cannot be separated by this query.
+    public func releasing(from current: CGEventFlags) -> CGEventFlags {
+        var remaining = current.subtracting(flags)
+        if let opposite = Self.allCases.first(where: { $0 != self && $0.flag == flag }),
+           current.contains(opposite.flags.subtracting(flag)) {
+            remaining.insert(flag)
+        }
+        return remaining
+    }
 }

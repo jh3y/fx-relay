@@ -19,6 +19,7 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.6.3 | Real terminal receipt testing finds dropped marked repeats; targeted ordinary key-down repeats deliver all Spaces |
 | 0.7.0 | Guided setup, honest capture/permission readiness, four-bank reference, Launch at Login, refined branding and stable local signing |
 | 0.7.1 | Standalone modifier holds and system delivery for handle actions, including Option for external dictation apps |
+| 0.7.2 | Clear the bridge's own echoed modifier state on release; add native normal/timeout/next-hold verification |
 
 ## The interface, then and now
 
@@ -48,6 +49,7 @@ v0.7 adds a separate reference window and guided setup. The underlying detector 
 - Sample cues play with the handle released, allowing macros independently of speech.
 - Orange selects an FX preset. Changing pitch gives sample slots more identities; the selector itself has no usable measured event. The app reports the last played bank, not a silently selected one.
 - Native down/up receipt does not establish a terminal's voice behavior. Claude's repeat-based hold detection now has an explicit compatibility note and a tap-mode starter.
+- v0.7.2 clears the bridge's own echoed modifier state on release. The user confirmed that an Option handle mapping then completes Hex dictation and pastes after release; the configured sound-gate delay still applies.
 - Base and FX 2 are measured. FX 3/4 predictions pass generated-signal tests, and the user reports successful presses across all sixteen slots. Voice behavior in each FX mode remains a separate check.
 
 ## Public source

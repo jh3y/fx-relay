@@ -10,13 +10,13 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
     private var repeatDown: CGEvent?
     private let systemShortcut: Bool
     private let post: (CGEvent) -> Void
-    private let hardwareFlags: () -> CGEventFlags
+    private let currentFlags: () -> CGEventFlags
     public init(pid: pid_t, chord: KeyChord, systemShortcut: Bool = false,
-                hardwareFlags: @escaping () -> CGEventFlags = { CGEventSource.flagsState(.hidSystemState) },
+                currentFlags: @escaping () -> CGEventFlags = { CGEventSource.flagsState(.hidSystemState) },
                 post: ((CGEvent) -> Void)? = nil) {
         self.chord = chord
         self.systemShortcut = systemShortcut
-        self.hardwareFlags = hardwareFlags
+        self.currentFlags = currentFlags
         self.post = post ?? { event in
             if systemShortcut { event.post(tap: .cghidEventTap) } else { event.postToPid(pid) }
         }
@@ -25,8 +25,8 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
         down = nil; up = nil; repeatDown = nil
         guard chord.keyCode <= 127 else { return false }
         if let modifier = chord.modifierKey {
-            // Do not take ownership of a modifier already pressed on the keyboard.
-            guard chord.modifiers == 0, !hardwareFlags().contains(modifier.flag) else { return false }
+            // Do not take ownership of a modifier already active before our press.
+            guard chord.modifiers == 0, !currentFlags().contains(modifier.flag) else { return false }
         }
         let source = CGEventSource(stateID: .privateState)
         down = CGEvent(keyboardEventSource: source, virtualKey: chord.keyCode, keyDown: true)
@@ -57,13 +57,13 @@ public final class QuartzChordSink: RepeatingKeyEventSink {
         return down != nil && up != nil && repeatDown != nil
     }
     public func keyDown() {
-        if let modifier = chord.modifierKey { down?.flags = hardwareFlags().union(modifier.flags) }
+        if let modifier = chord.modifierKey { down?.flags = currentFlags().union(modifier.flags) }
         send(down)
     }
     public func keyUp() {
-        // Private-source events do not own the hardware state. Preserve any
-        // physical modifiers the user pressed during the synthetic hold.
-        if chord.modifierKey != nil { up?.flags = hardwareFlags() }
+        // Posting through HID can put our own modifier in the queried state.
+        // Copying it verbatim made a supposed release another modifier-down.
+        if let modifier = chord.modifierKey { up?.flags = modifier.releasing(from: currentFlags()) }
         send(up)
     }
     public func keyRepeat() { if chord.modifierKey == nil { send(repeatDown) } }
