@@ -10,6 +10,7 @@ final class AudioCaptureEngine {
     private var observers: [NSObjectProtocol] = []
     private var timeout: DispatchSourceTimer?
     private var generation = UUID()
+    private var detailedSpectrum = false
 
     func start(deviceUID: String, threshold: Double, configuration: BridgeConfiguration,
                onControl: @escaping (ControlFrame) -> Void,
@@ -38,6 +39,7 @@ final class AudioCaptureEngine {
                 session.addOutput(output)
                 session.commitConfiguration()
                 let processor = AudioSampleProcessor(threshold: threshold, configuration: configuration,
+                    detailedSpectrum: detailedSpectrum,
                     onControl: onControl, onProbe: onProbe, onFrame: onFrame, onSignal: onSignal,
                     onError: { [weak self] message in self?.fail(message, token: token, onError: onError) })
                 output.setSampleBufferDelegate(processor, queue: processor.queue)
@@ -75,6 +77,14 @@ final class AudioCaptureEngine {
 
     func setProbeSession(_ id: UUID?) {
         queue.async { [weak self] in self?.processor?.setProbeSession(id) }
+    }
+
+    func setDetailedSpectrum(_ enabled: Bool) {
+        queue.async { [weak self] in
+            guard let self, self.detailedSpectrum != enabled else { return }
+            self.detailedSpectrum = enabled
+            self.processor?.setDetailedSpectrum(enabled)
+        }
     }
 
     func stop() { queue.async { [self] in stopSession() } }

@@ -26,6 +26,7 @@ public struct SignalSnapshot: Sendable {
 /// Implementations are confined to the capture delegate's serial queue.
 public protocol SignalAnalyzing: AnyObject {
     func analyze(channels: [[Float]], sampleRate: Double, time: Double) -> SignalSnapshot?
+    func setSpectrumRefreshInterval(_ interval: TimeInterval)
     func reset()
 }
 
@@ -44,6 +45,7 @@ public final class SignalAnalyzer: SignalAnalyzing {
     private var previousChannel = -1
     private var previousRate = 0.0
     private var lastSpectrumTime = -Double.infinity
+    private var spectrumRefreshInterval: TimeInterval = 0.1
     private var spectrum: [Float] = []
     private var compactSpectrum = CompactSpectrum.empty
     private var frequency: Double?
@@ -60,6 +62,12 @@ public final class SignalAnalyzer: SignalAnalyzing {
     }
 
     deinit { vDSP_DFT_DestroySetup(setup) }
+
+    /// Only diagnostic frequency/spectrum work is throttled. Levels, channel choice,
+    /// and the separate ControlAnalyzer continue to consume every input buffer.
+    public func setSpectrumRefreshInterval(_ interval: TimeInterval) {
+        spectrumRefreshInterval = interval.isFinite ? min(1, max(0.1, interval)) : 0.1
+    }
 
     public func reset() {
         cursor = 0
@@ -103,7 +111,7 @@ public final class SignalAnalyzer: SignalAnalyzing {
             cursor = (cursor + 1) % Self.fftSize
             filled = min(filled + 1, Self.fftSize)
         }
-        if filled == Self.fftSize && time - lastSpectrumTime >= 0.1 {
+        if filled == Self.fftSize && time - lastSpectrumTime >= spectrumRefreshInterval {
             updateSpectrum(sampleRate: sampleRate)
             lastSpectrumTime = time
         }

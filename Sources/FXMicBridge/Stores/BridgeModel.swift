@@ -57,6 +57,7 @@ final class BridgeModel {
         monitoringEnabled = store.loadMonitoringEnabled()
         profiles = ProfileManager(legacy: store.loadBridge(), defaults: defaults)
         bridgeConfiguration = profiles.selected.configuration
+        diagnostics.onRecordingChanged = { [weak self] in self?.refreshAnalysisDetail() }
         micSetup.onWillInstall = { [weak self] in
             self?.monitoringEnabled = false
             self?.stopCapture(reason: "Installing mic cue pack")
@@ -199,7 +200,7 @@ final class BridgeModel {
         if handleRouteState != handleRouter.state { handleRouteState = handleRouter.state }
     }
 
-    private func reconcileOutput() {
+    private func reconcileOutput(checkFocusImmediately: Bool = true) {
         #if !FXRELAY_PREVIEW // Screenshot builds cannot touch capture, permissions or output.
         let reason: String?
         if !monitoringEnabled { reason = "Paused" }
@@ -210,7 +211,7 @@ final class BridgeModel {
         else if hasUnsavedMappings { reason = "Apply or revert your mapping changes" }
         else if micSetup.busy { reason = "Installing mic cue pack" }
         else { reason = nil }
-        actions.setAvailability(blockedBy: reason)
+        actions.setAvailability(blockedBy: reason, checkFocusImmediately: checkFocusImmediately)
         #endif
     }
 
@@ -337,6 +338,15 @@ final class BridgeModel {
         diagnostics.finish(reason: "Signal Monitor closed; partial report")
     }
 
+    func setMonitorVisible(source: UUID, visible: Bool) {
+        readings.setVisible(.monitor, source: source, visible: visible)
+        refreshAnalysisDetail()
+    }
+
+    private func refreshAnalysisDetail() {
+        capture.setDetailedSpectrum(readings.isVisible(.monitor) || diagnostics.isRecording)
+    }
+
     func copyEvents() {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss.SSS"
@@ -412,7 +422,8 @@ final class BridgeModel {
                             frame.tone.confidence * 100, self.actions.isArmed ? "" : " · preview"), analysisUptime: frame.time)
                     }
                     if self.detectedTone != nil, frame.time - self.lastToneTime > 0.6 { self.detectedTone = nil }
-                    self.reconcileOutput()
+                    // process() immediately checks this availability together with fresh focus/permission.
+                    self.reconcileOutput(checkFocusImmediately: false)
                     self.actions.process(frame, configuration: self.bridgeConfiguration, handle: handle)
                 }
             },

@@ -22,14 +22,21 @@ import XCTest
         var trusted = true
         var utilityFocused = false
         var focused = true
+        var targetPID: pid_t = 101
+        var focusQueries = 0
+        var permissionQueries = 0
         var sinks: [Sink] = []
         var systemDeliveries: [Bool] = []
         var log: [String] = []
         var router = BankHandleRouter(startupBank: 0)
         var config = BridgeConfiguration()
         lazy var dispatcher = ActionDispatcher(
-            frontmost: { [unowned self] in self.focused ? KeyboardTarget(processIdentifier: 101, localizedName: "Test target") : nil },
-            hasAccessibility: { [unowned self] in self.trusted }, utilityFocused: { [unowned self] in self.utilityFocused }, now: { [unowned self] in self.time },
+            frontmost: { [unowned self] in
+                self.focusQueries += 1
+                return self.focused ? KeyboardTarget(processIdentifier: self.targetPID, localizedName: "Test target") : nil
+            },
+            hasAccessibility: { [unowned self] in self.permissionQueries += 1; return self.trusted },
+            utilityFocused: { [unowned self] in self.utilityFocused }, now: { [unowned self] in self.time },
             makeKeySink: { [unowned self] _, _, system in
                 let sink = Sink(); self.sinks.append(sink); self.systemDeliveries.append(system); return sink
             })
@@ -65,6 +72,40 @@ import XCTest
         XCTAssertEqual(h.sinks.first?.ups, 1)
         XCTAssertFalse(h.dispatcher.pttHeld)
         XCTAssertTrue(h.log.contains { $0.contains("UP posted") && $0.contains("1 repeats") })
+    }
+
+    func testQuietFramesUseOneFreshFocusAndPermissionQueryEach() async {
+        let h = Harness(); defer { h.cleanUp() }
+        for _ in 0..<25 {
+            h.dispatcher.setAvailability(blockedBy: nil, checkFocusImmediately: false)
+            h.frame(active: false)
+        }
+        XCTAssertEqual(h.focusQueries, 25)
+        XCTAssertEqual(h.permissionQueries, 25)
+        XCTAssertTrue(h.dispatcher.isArmed)
+        XCTAssertTrue(h.sinks.isEmpty)
+    }
+
+    func testFramesCatchFocusAndPermissionChangesWithoutNotifications() async {
+        for change in ["focus", "permission", "own process"] {
+            let h = Harness(); defer { h.cleanUp() }
+            h.readyAndHold()
+            switch change {
+            case "focus": h.targetPID = 202
+            case "permission": h.trusted = false
+            default: h.targetPID = ProcessInfo.processInfo.processIdentifier
+            }
+            h.dispatcher.setAvailability(blockedBy: nil, checkFocusImmediately: false)
+            h.frame(active: true)
+            XCTAssertEqual(h.sinks[0].ups, 1, change)
+            XCTAssertEqual(h.sinks[0].repeats, 0, change)
+            h.targetPID = 101; h.trusted = true
+            h.frame(active: true)
+            XCTAssertEqual(h.sinks.count, 1, "An interrupted gesture must not resume")
+            h.frame(active: false, transition: false)
+            h.frame(active: true, transition: true)
+            XCTAssertEqual(h.sinks.count, 2, change)
+        }
     }
 
     func testUtilityFocusReleasesAndReturningNeedsNewGestureWithoutEnableButton() async {

@@ -19,7 +19,8 @@ final class AudioSampleProcessor: NSObject, AVCaptureAudioDataOutputSampleBuffer
     private let onProbe: (UUID, [ProbeWindow]) -> Void
     private var probeSessionID: UUID?
 
-    init(threshold: Double, configuration: BridgeConfiguration, onControl: @escaping (ControlFrame) -> Void,
+    init(threshold: Double, configuration: BridgeConfiguration, detailedSpectrum: Bool,
+         onControl: @escaping (ControlFrame) -> Void,
          onProbe: @escaping (UUID, [ProbeWindow]) -> Void,
          onFrame: @escaping (SignalSnapshot) -> Void,
          onSignal: @escaping (Bool) -> Void, onError: @escaping (String) -> Void) {
@@ -30,6 +31,7 @@ final class AudioSampleProcessor: NSObject, AVCaptureAudioDataOutputSampleBuffer
         self.onFrame = onFrame
         self.onSignal = onSignal
         self.onError = onError
+        analyzer.setSpectrumRefreshInterval(detailedSpectrum ? 0.1 : 1)
     }
 
     var secondsSinceLastBuffer: Double {
@@ -40,6 +42,9 @@ final class AudioSampleProcessor: NSObject, AVCaptureAudioDataOutputSampleBuffer
 
     func setThreshold(_ value: Double) { queue.async { [weak self] in self?.threshold = value } }
     func setProbeSession(_ id: UUID?) { queue.async { [weak self] in self?.probeSessionID = id } }
+    func setDetailedSpectrum(_ enabled: Bool) {
+        queue.async { [weak self] in self?.analyzer.setSpectrumRefreshInterval(enabled ? 0.1 : 1) }
+    }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {

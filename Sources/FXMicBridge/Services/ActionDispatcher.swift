@@ -38,15 +38,14 @@ final class ActionDispatcher {
     private let utilityFocused: @MainActor () -> Bool
     private let now: () -> Double
     private let makeKeySink: (pid_t, KeyChord, Bool) -> KeyEventSink
+    private let ownPID = ProcessInfo.processInfo.processIdentifier
 
     init(frontmost: @escaping @MainActor () -> KeyboardTarget? = {
              guard let app = NSWorkspace.shared.frontmostApplication, !app.isTerminated else { return nil }
              return KeyboardTarget(processIdentifier: app.processIdentifier, localizedName: app.localizedName)
          },
          hasAccessibility: @escaping () -> Bool = { AXIsProcessTrusted() },
-         utilityFocused: @escaping @MainActor () -> Bool = {
-             NSApp.isActive || NSWorkspace.shared.frontmostApplication?.processIdentifier == NSRunningApplication.current.processIdentifier
-         },
+         utilityFocused: @escaping @MainActor () -> Bool = { NSApp.isActive },
          now: @escaping () -> Double = { ProcessInfo.processInfo.systemUptime },
          makeKeySink: @escaping (pid_t, KeyChord, Bool) -> KeyEventSink = {
              QuartzChordSink(pid: $0, chord: $1, systemShortcut: $2)
@@ -56,9 +55,9 @@ final class ActionDispatcher {
     }
 
     /// Availability belongs to the app lifecycle, not a user-operated arm switch.
-    func setAvailability(blockedBy reason: String?) {
+    func setAvailability(blockedBy reason: String?, checkFocusImmediately: Bool = true) {
         unavailableReason = reason
-        checkFocus()
+        if checkFocusImmediately { checkFocus() }
     }
 
     func checkFocus() {
@@ -66,7 +65,9 @@ final class ActionDispatcher {
         if reason == nil && !hasAccessibility() { reason = "Accessibility permission needed" }
         if reason == nil && isBusy { reason = "Manual keyboard test running" }
         let focused = frontmost()
-        if reason == nil && utilityFocused() { reason = "Ready · switch to your app" }
+        if reason == nil && (utilityFocused() || focused?.processIdentifier == ownPID) {
+            reason = "Ready · switch to your app"
+        }
         let next = reason == nil ? focused : nil
         if gate.update(targetPID: next?.processIdentifier, at: now()) {
             textRunner.cancel()
@@ -98,11 +99,12 @@ final class ActionDispatcher {
             textRunner.cancel()
             for id in Array(held.keys) { release(id: id, reason: "Bank changed") }
         }
-        guard isArmed else { return }
+        // One fresh focus/permission check per frame, including while disarmed.
+        // Lifecycle notifications still check immediately; no cached permission or target is used.
         checkFocus()
         guard isArmed else { return }
-        guard hasAccessibility(), now() - frame.time < 0.25 else {
-            disable(reason: "Permission missing or stale audio"); return
+        guard now() - frame.time < 0.25 else {
+            disable(reason: "Stale audio"); return
         }
         let quiet = !frame.pttActive && frame.rmsDB < configuration.releaseDB &&
             frame.tone.candidate == nil && frame.tone.heldControl == nil && frame.tone.detected == nil

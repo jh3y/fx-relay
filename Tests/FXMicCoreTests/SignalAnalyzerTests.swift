@@ -57,6 +57,35 @@ final class SignalAnalyzerTests: XCTestCase {
         XCTAssertNil(analyzer.analyze(channels: [[1]], sampleRate: 0, time: 0))
     }
 
+    func testBackgroundSpectrumKeepsLevelsFreshAndLiveModeResumesImmediately() throws {
+        let analyzer = SignalAnalyzer()
+        analyzer.setSpectrumRefreshInterval(1)
+        let first = try XCTUnwrap(analyzer.analyze(channels: [sine(1500)], sampleRate: 48000, time: 0))
+        XCTAssertEqual(try XCTUnwrap(first.dominantFrequency), 1500, accuracy: 2)
+        let next = try XCTUnwrap(analyzer.analyze(channels: [sine(2300, amplitude: 0.1)], sampleRate: 48000, time: 0.2))
+        XCTAssertEqual(next.rmsDB, -23.01, accuracy: 0.08, "Levels must not wait for the diagnostic FFT")
+        XCTAssertEqual(try XCTUnwrap(next.spectrumAgeSeconds), 0.2, accuracy: 0.001)
+        analyzer.setSpectrumRefreshInterval(0.1)
+        let live = try XCTUnwrap(analyzer.analyze(channels: [sine(2300)], sampleRate: 48000, time: 0.21))
+        XCTAssertEqual(try XCTUnwrap(live.dominantFrequency), 2300, accuracy: 2)
+        XCTAssertEqual(live.spectrumAgeSeconds, 0)
+    }
+
+    func testBackgroundSpectrumRefreshesAndResetsWhenChannelOrRateChanges() throws {
+        let analyzer = SignalAnalyzer()
+        analyzer.setSpectrumRefreshInterval(1)
+        _ = analyzer.analyze(channels: [sine(1500)], sampleRate: 48000, time: 0)
+        let refreshed = try XCTUnwrap(analyzer.analyze(channels: [sine(2300)], sampleRate: 48000, time: 1.01))
+        XCTAssertEqual(try XCTUnwrap(refreshed.dominantFrequency), 2300, accuracy: 2)
+        let changed = try XCTUnwrap(analyzer.analyze(channels: [sine(3100, amplitude: 0.01), sine(3900)], sampleRate: 48000, time: 1.02))
+        XCTAssertEqual(changed.analyzedChannel, 2)
+        XCTAssertEqual(try XCTUnwrap(changed.dominantFrequency), 3900, accuracy: 2)
+        let rateChanged = try XCTUnwrap(analyzer.analyze(channels: [sine(1500, rate: 44100, count: 1024)], sampleRate: 44100, time: 1.03))
+        XCTAssertTrue(rateChanged.spectrumDB.isEmpty)
+        XCTAssertNil(rateChanged.dominantFrequency)
+        XCTAssertNil(rateChanged.spectrumAgeSeconds)
+    }
+
     func testSignalOnlyEmitsTransitions() {
         var presence = SignalPresence()
         XCTAssertNil(presence.update(rmsDB: -80, thresholdDB: -45))

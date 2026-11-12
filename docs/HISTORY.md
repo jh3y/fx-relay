@@ -21,6 +21,9 @@ The project was developed by measuring the real hardware before assigning behavi
 | 0.7.1 | Standalone modifier holds and system delivery for handle actions, including Option for external dictation apps |
 | 0.7.2 | Clear the bridge's own echoed modifier state on release; add native normal/timeout/next-hold verification |
 | 0.8.0 | Contact identity, compact adaptive popover, native sidebar/toolbar editor and coherent light/dark utility surfaces |
+| 0.8.1 | Remove duplicate focus/permission queries and reduce hidden diagnostic spectrum refresh; retain control timing and release safeguards |
+
+v0.8.1 passed 128 optimized Swift tests. Quiet, windows-closed measurements on the same M2 Max were 3.43–3.63% of one CPU core versus a 6.33% v0.8.0 baseline (short observations, not an energy benchmark). After opening Hex, the user confirmed that the handle dictation workflow still works. It continues to follow speech activity and silence, rather than physical handle position.
 
 ## The interface, then and now
 

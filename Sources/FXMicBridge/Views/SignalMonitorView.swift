@@ -50,7 +50,7 @@ struct SignalMonitorView: View {
         .frame(minWidth: 640, minHeight: 560)
         .bridgeSurface()
         .background(WindowVisibilityObserver(onChange: { source, visible in
-            model.readings.setVisible(.monitor, source: source, visible: visible)
+            model.setMonitorVisible(source: source, visible: visible)
         }, onClose: model.monitorClosed))
         .onAppear { model.refreshPermissions() }
         .onDisappear(perform: model.monitorClosed)

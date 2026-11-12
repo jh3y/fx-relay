@@ -5,7 +5,9 @@ import UniformTypeIdentifiers
 
 @MainActor @Observable
 final class DiagnosticRecorder {
-    private(set) var isRecording = false
+    private(set) var isRecording = false {
+        didSet { if isRecording != oldValue { onRecordingChanged?() } }
+    }
     private(set) var isSaving = false
     private(set) var step: DiagnosticStep?
     private(set) var stepNumber = 1
@@ -22,6 +24,7 @@ final class DiagnosticRecorder {
     var notes = "" { didSet { session?.setNotes(notes) } }
     var onEvent: ((String) -> Void)?
     var onProbeSessionChanged: ((UUID?) -> Void)?
+    var onRecordingChanged: (() -> Void)?
     private var session: DiagnosticSession?
     private var destination: URL?
     private var timer: Timer?

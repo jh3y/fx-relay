@@ -25,7 +25,11 @@ The build creates a proper `.app` bundle, includes AppIcon.icns and all cue-pack
 | BridgeReadiness / UtilityPreferences | Permission/capture readiness, first-run migration and reference-window preference |
 | LoginItemManager | Explicit main-app login registration through ServiceManagement; actual OS status is the source of truth |
 
-FFT refresh is capped at 10 Hz, visible readings at 15 Hz, and diagnostic measurements at 5 Hz. Controls run at 25 Hz independently of visibility. Tone probes are cached and skipped below the level floor. No speech model, networking client or shell action is included.
+Diagnostic FFT refresh runs at 1 Hz in the background and up to 10 Hz while Signal Monitor is visible or a guided diagnostic is recording. Visible readings remain capped at 15 Hz and diagnostic measurements at 5 Hz; exported spectrum age identifies reused frequency data. Levels and controls keep their existing cadence, with controls at 25 Hz independently of visibility. Tone probes are cached and skipped below the level floor. No speech model, networking client or shell action is included.
+
+Each control frame performs one fresh foreground-app and Accessibility check; lifecycle notifications check immediately as well. The same foreground-app result identifies whether FX Relay itself is focused. Activation retains its target check, text actions revalidate during delivery, and held keys retain their independent expiry. The optimization removes duplicate queries without caching the permission or reducing control frequency.
+
+To measure an existing development build, close its windows and popover, leave the input connected and quiet, then run `python3 script/measure_cpu.py --state windows-closed --seconds 30 --expected-version 0.8.1`. The script checks for exactly one app process from `dist`, measures CPU-time deltas (100% is one core), and saves a private report under `diagnostics/`. It does not control window visibility, record audio or post keys. Add `--sample` for a short stack profile after the measurement. Stop compilers during comparisons and use the same device, app focus and input conditions. Process CPU excludes work attributed to system services and is not an energy or battery benchmark.
 
 ## Visual assets and checks
 

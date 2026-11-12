@@ -65,7 +65,7 @@ The bridge does not transcribe, route, mute, replace or upload your audio. Cue s
 
 FX Relay is designed to stay in the menu bar. Closing its windows leaves capture and control detection running; **Pause** stops both, and **Quit** exits. It runs no speech model. Chart updates are limited to visible surfaces, while signal analysis continues in the background.
 
-With the windows and popover closed and capture running, **v0.7.0 on an Apple M2 Max** averaged **4.53% of one CPU core and 83 MiB resident memory** over 30.25 seconds. CPU uses process CPU-time deltas (100% = one core); memory is RSS. Speech and room noise were uncontrolled. This is a short observation on one Mac, not a battery-life or long-duration benchmark; devices and visible diagnostic views can change the cost.
+With the windows and popover closed, capture running and the handle released, **v0.8.1 on an Apple M2 Max** measured **3.43–3.63% of one CPU core** in two 30-second runs, versus **6.33%** for v0.8.0 in the same session: about **44% lower** on average. Most of the observed reduction followed removal of duplicate foreground-app/permission queries. Diagnostic spectrum work also drops to 1 Hz while hidden; control detection keeps its existing rate. These are short observations on one Mac with other system load uncontrolled, not a battery-life or long-duration benchmark. CPU uses process CPU-time deltas (100% = one core), excluding system services. Devices, speech and visible diagnostics can change the cost. [Reproduce the measurement](docs/DEVELOPMENT.md#architecture).
 
 ## Current status
 
